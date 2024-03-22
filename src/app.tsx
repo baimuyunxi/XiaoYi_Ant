@@ -49,25 +49,25 @@ export async function getInitialState(): Promise<{
 // ProLayout 支持的api https://procomponents.ant.design/components/layout
 export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) => {
   return {
-    actionsRender: () => [<Question key="doc" />, <SelectLang key="SelectLang" />],
-    avatarProps: {
-      src: initialState?.currentUser?.avatar,
-      title: <AvatarName />,
-      render: (_, avatarChildren) => {
-        return <AvatarDropdown>{avatarChildren}</AvatarDropdown>;
-      },
-    },
-    waterMarkProps: {
-      content: initialState?.currentUser?.name,
-    },
+    // actionsRender: () => [<Question key="doc" />, <SelectLang key="SelectLang" />],
+    // avatarProps: {
+    //   src: initialState?.currentUser?.avatar,
+    //   title: <AvatarName />,
+    //   render: (_, avatarChildren) => {
+    //     return <AvatarDropdown>{avatarChildren}</AvatarDropdown>;
+    //   },
+    // },
+    // waterMarkProps: {
+    //   content: initialState?.currentUser?.name,
+    // },
     footerRender: () => <Footer />,
-    onPageChange: () => {
-      const { location } = history;
-      // 如果没有登录，重定向到 login
-      if (!initialState?.currentUser && location.pathname !== loginPath) {
-        history.push(loginPath);
-      }
-    },
+    // onPageChange: () => {
+    //   const { location } = history;
+    //   // 如果没有登录，重定向到 login
+    //   if (!initialState?.currentUser && location.pathname !== loginPath) {
+    //     history.push(loginPath);
+    //   }
+    // },
     bgLayoutImgList: [
       {
         src: 'https://mdn.alipayobjects.com/yuyan_qk0oxh/afts/img/D2LWSqNny4sAAAAAAAAAAAAAFl94AQBr',
@@ -88,17 +88,17 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
         width: '331px',
       },
     ],
-    links: isDev
-      ? [
-        <Link key="openapi" to="/umi/plugin/openapi" target="_blank">
-          <LinkOutlined />
-          <span>OpenAPI 文档</span>
-        </Link>,
-      ]
-      : [],
+    // links: isDev
+    //   ? [
+    //     <Link key="openapi" to="/umi/plugin/openapi" target="_blank">
+    //       <LinkOutlined />
+    //       <span>OpenAPI 文档</span>
+    //     </Link>,
+    //   ]
+    //   : [],
     menuHeaderRender: undefined,
     // 自定义 403 页面
-    // unAccessible: <div>unAccessible</div>,
+    unAccessible: <div>unAccessible</div>,
     // 增加一个 loading 的状态
     childrenRender: (children) => {
       // if (initialState?.loading) return <PageLoading />;
