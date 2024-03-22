@@ -7,6 +7,8 @@ const Settings: ProLayoutProps & {
   pwa?: boolean;
   logo?: string;
 } = {
+  // 设置标题的 title
+  "title": '小翼智能分析系统',
   "navTheme": "light",
   "colorPrimary": "#1890ff",
   "layout": "side",
@@ -14,10 +16,11 @@ const Settings: ProLayoutProps & {
   "fixedHeader": false,
   "fixSiderbar": true,
   "pwa": true,
-  "logo": "https://gw.alipayobjects.com/zos/rmsportal/KDpgvguMpGfqaHPjicRK.svg",
+  "logo": "https://s3.bmp.ovh/imgs/2024/03/23/036ec1148cf7320a.png",
   "token": {},
-  "siderMenuType": "sub",
-  "splitMenus": false
+  "siderMenuType": "group",
+  "splitMenus": false,
+  pageTitleRender: false
 };
 
 export default Settings;

@@ -17,6 +17,11 @@ export default defineConfig({
   hash: true,
 
   /**
+   * 导航栏页面icon设置
+   */
+  favicons:["https://s3.bmp.ovh/imgs/2024/03/23/036ec1148cf7320a.png"],
+
+  /**
    * @name 兼容性设置
    * @description 设置 ie11 不一定完美兼容，需要检查自己使用的所有依赖
    * @doc https://umijs.org/docs/api/config#targets
@@ -77,7 +82,7 @@ export default defineConfig({
    * @name layout 插件
    * @doc https://umijs.org/docs/max/layout-menu
    */
-  title: 'Ant Design Pro',
+  title: '小翼智能分析系统',
   layout: {
     locale: true,
     ...defaultSettings,
@@ -98,7 +103,7 @@ export default defineConfig({
   locale: {
     // default zh-CN
     default: 'zh-CN',
-    antd: true,
+    antd: false,
     // default true, when it is true, will use `navigator.language` overwrite default
     baseNavigator: true,
   },
