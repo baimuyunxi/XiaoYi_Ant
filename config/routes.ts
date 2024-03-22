@@ -39,7 +39,7 @@ export default [
   //     },
   //     {
   //       component: '404',
-  //       path: '/user/',
+  //       path: '/user',
   //     },
   //   ],
   // },
@@ -54,23 +54,40 @@ export default [
       },
       {
         name: 'analysis',
-        icon: 'smile',
+        icon: 'PieChartOutlined',
         path: '/dashboard/analysis',
         component: './dashboard/analysis',
       },
       {
         name: 'monitor',
-        icon: 'smile',
+        icon: 'HeatMapOutlined',
         path: '/dashboard/monitor',
         component: './dashboard/monitor',
       },
-      {
-        name: 'workplace',
-        icon: 'smile',
-        path: '/dashboard/workplace',
-        component: './dashboard/workplace',
-      },
+      // {
+      //   name: 'workplace',
+      //   icon: 'smile',
+      //   path: '/dashboard/workplace',
+      //   component: './dashboard/workplace',
+      // },
     ],
+  },
+  {
+    path: '/ivr-Index',
+    icon: 'FileWordOutlined',
+    name:'分析数据',
+    routes: [
+      {
+        path: '/ivr-Index',
+        redirect: '/ivr-Index/notifications'
+      },
+      {
+        name:'日报' ,
+        icon: 'ContainerOutlined',
+        path:'/ivr-Index/notifications',
+        component: './ivr-Index/notifications',
+      },
+    ]
   },
   {
     path: '/list',
@@ -124,29 +141,29 @@ export default [
       },
     ],
   },
-  {
-    name: 'result',
-    icon: 'CheckCircleOutlined',
-    path: '/result',
-    routes: [
-      {
-        path: '/result',
-        redirect: '/result/success',
-      },
-      {
-        name: 'success',
-        icon: 'smile',
-        path: '/result/success',
-        component: './result/success',
-      },
-      {
-        name: 'fail',
-        icon: 'smile',
-        path: '/result/fail',
-        component: './result/fail',
-      },
-    ],
-  },
+  // {
+  //   name: 'result',
+  //   icon: 'CheckCircleOutlined',
+  //   path: '/result',
+  //   routes: [
+  //     {
+  //       path: '/result',
+  //       redirect: '/result/success',
+  //     },
+  //     {
+  //       name: 'success',
+  //       icon: 'smile',
+  //       path: '/result/success',
+  //       component: './result/success',
+  //     },
+  //     {
+  //       name: 'fail',
+  //       icon: 'smile',
+  //       path: '/result/fail',
+  //       component: './result/fail',
+  //     },
+  //   ],
+  // },
   {
     name: 'account',
     icon: 'user',
@@ -176,6 +193,6 @@ export default [
   },
   {
     component: '404',
-    path: '/*',
+    path: '*',
   },
 ];
