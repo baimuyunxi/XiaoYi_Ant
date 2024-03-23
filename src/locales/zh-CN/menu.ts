@@ -49,4 +49,7 @@ export default {
   'menu.editor.flow': '流程编辑器',
   'menu.editor.mind': '脑图编辑器',
   'menu.editor.koni': '拓扑编辑器',
+  // 数据分析大类
+  'menu.analysis':'数据分析',
+  'menu.analysis.notifications':'日报',
 };

@@ -74,16 +74,16 @@ export default [
   },
   {
     path: '/ivr-Index',
-    icon: 'FileWordOutlined',
-    name:'分析数据',
+    icon: 'ContainerOutlined',
+    name:'analysis',
     routes: [
       {
         path: '/ivr-Index',
         redirect: '/ivr-Index/notifications'
       },
       {
-        name:'日报' ,
-        icon: 'ContainerOutlined',
+        name:'notifications' ,
+        icon: 'FileWordOutlined',
         path:'/ivr-Index/notifications',
         component: './ivr-Index/notifications',
       },
