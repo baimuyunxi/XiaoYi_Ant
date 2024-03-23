@@ -1,66 +1,81 @@
-import {PlusOutlined} from '@ant-design/icons';
-import React, {useRef, useState} from 'react';
-import {Button, DatePicker, Space} from 'antd';
-import type {DatePickerProps, GetProps} from 'antd';
-import {ActionType, PageContainer, ProColumns, ProTable} from "@ant-design/pro-components";
-import type {TableListItem, TableListPagination} from "./data";
-import {rule} from "@/pages/list/table-list/service";
+import {PlusOutlined, SearchOutlined} from '@ant-design/icons';
+import React, {useEffect, useRef, useState} from 'react';
+import {Card, Col, DatePicker, Row, Space, Button} from "antd";
+import {PageContainer} from "@ant-design/pro-components";
+import moment from "moment";
+import customParseFormat from 'dayjs/plugin/customParseFormat';
+import useStyles from './style.style'
+import {style} from "@umijs/bundler-esbuild/dist/plugins/style";
 
-type RangePickerProps = GetProps<typeof DatePicker.RangePicker>;
+
 
 const {RangePicker} = DatePicker;
 
-const onChangeInitial = (
-  value: DatePickerProps['value'] | RangePickerProps['value'],
-  dateString: [string, string] | string
-) => {
-  console.log('Selected Time', value);
-  console.log('Formatted Selected Time: ', dateString)
-}
+const App: React.FC = () => {
+  // 自定义样式引用
+  const {styles} = useStyles();
 
-const onOkInitial = (value: DatePickerProps['value'] | RangePickerProps['value']) => {
-  console.log('onOk: ', value);
-};
+  // 禁用今天之后的日期
+  const disabledDate = (current: moment.Moment) => {
+    return current && current.isAfter(moment().endOf('day'));
+  };
 
-const TableList: () => void = () => {
-  /** 新建窗口的弹窗 */
-  const [createModalVisible, handleModalVisible] = useState<boolean>(false);
-  /** 分布更新窗口的弹窗 */
+  const [dates, setDates] = useState<[moment.Moment, moment.Moment]>(() => {
+    const yesterdayStart = moment().subtract(1, 'days').startOf('day');
+    const yesterdayEnd = moment().subtract(1, 'days').endOf('day');
+    return [yesterdayStart, yesterdayEnd];
+  });
+  const [comparisonDates, setComparisonDates] = useState<[moment.Moment, moment.Moment]>();
 
-  const [updateModalVisible, handleUpdateModalVisible] = useState<boolean>(false);
-  const [showDetail, setShowDetail] = useState<boolean>(false);
-  const actionRef = useRef<ActionType>();
-  const [selectedRowsState, setSelectedRows] = useState<TableListItem[]>([]);
-
-  const columns: ProColumns<TableListItem>[] = [
-      {
-        title: '选择时间',
-        dataIndex: 'selectTime',
-        valueType: 'dateRange',
-        render: () => {
-          return (
-            <Space size={12}>
-              <RangePicker
-                showTime={{ format: 'HH:mm' }}
-                format="YYYY-MM-DD HH:mm"
-                onChange={onChangeInitial}
-                onOk={onOkInitial}
-              />
-            </Space>
-          );
-        },
-      }
-    ]
-  ;
+  // 环比时间计算
+  useEffect(() => {
+    if (dates) {
+      const startComparisonDate = dates[0].clone().subtract(1, 'month');
+      const endComparisonDate = dates[1].clone().subtract(1, 'month');
+      setComparisonDates([startComparisonDate, endComparisonDate]);
+    }
+  }, [dates]);
 
   return (
     <PageContainer>
-      <ProTable<TableListItem, TableListPagination>
-        headerTitle='呼叫量数据'
-        columns={columns}
-      />
+      <Card title="时间选择">
+        <Space direction='vertical' size={12}>
+          <Row align={"middle"} gutter={16} wrap={false}>
+            <Col className={styles.labelColWithPadding}>
+              <span>时间：</span>
+            </Col>
+            <Col className={styles.pickerCol}>
+              <RangePicker
+                showTime
+                format="YYYY-MM-DD HH:mm:ss"
+                defaultValue={dates}
+                onCalendarChange={(vals) => setDates(vals as [moment.Moment, moment.Moment])}
+                disabledDate={disabledDate}
+              />
+            </Col>
+            {/*<Col><span>     </span></Col>*/}
+            <Col className={styles.labelColWithPadding}>
+              <span>环比时间：</span>
+            </Col>
+            <Col className={styles.pickerCol}>
+              <RangePicker
+                showTime
+                format="YYYY-MM-DD HH:mm:ss"
+                value={comparisonDates}
+                onCalendarChange={(vals) => setComparisonDates(vals as [moment.Moment, moment.Moment])}
+              />
+            </Col>
+            <Col className={styles.buttonCol}>
+              <Button type="primary" icon={<SearchOutlined/>}>
+                查询
+              </Button>
+            </Col>
+          </Row>
+        </Space>
+      </Card>
     </PageContainer>
   );
 };
 
-export default TableList;
+
+export default App;
