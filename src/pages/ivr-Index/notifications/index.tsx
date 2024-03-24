@@ -13,24 +13,43 @@ const {RangePicker} = DatePicker;
 // 表头只支持列合并，使用 column 里的 colSpan 进行设置。
 // 表格支持行/列合并，使用 render 里的单元格属性 colSpan 或者 rowSpan 设值为 0 时，设置的表格不会渲染。
 // 合并数组单元格
-const createNewArr = (data, dataIndex) => {
-  return data.reduce((result, item) => {
-    // 首先将指定字段作为新数组result取出
-    if (!result.includes(item[dataIndex])) {
-      result.push(item[dataIndex]);
-    }
-    return result;
-  }, []).reduce((result, value) => {
-    // 将相同数据项的数据作为新数组取出，并在其内部添加新字段**rowSpan**
-    const children = data.filter(item => item[dataIndex] === value);
-    result = result.concat(
-      children.map((item, index) => ({
-        ...item,
-        rowSpan: index === 0 ? children.length : 0, // 将第一行数据添加rowSpan字段
-      }))
-    );
-    return result;
-  }, []);
+const createNewArr = (data, columnIndexes) => {
+  let result = [...data]; // Clone the original data to maintain immutability
+
+  columnIndexes.forEach((columnIndex) => {
+    let lastValue = null;
+    let count = 0;
+
+    // Temporarily store rowSpan values for the current column
+    const rowSpanMap = new Map();
+
+    // Calculate rowSpan values
+    result.forEach((item, index) => {
+      if (item[columnIndex] !== lastValue) {
+        if (count > 0) {
+          rowSpanMap.set(index - count, count); // Store the rowSpan for the first item in a sequence
+        }
+        lastValue = item[columnIndex];
+        count = 1; // Reset count for the new value
+      } else {
+        count += 1; // Increment count for identical sequential values
+        rowSpanMap.set(index, 0); // Subsequent items in a sequence get a rowSpan of 0
+      }
+
+      // Handle the last sequence in the data
+      if (index === result.length - 1 && count > 0) {
+        rowSpanMap.set(index - count + 1, count);
+      }
+    });
+
+    // Apply rowSpan values to the result
+    result = result.map((item, index) => ({
+      ...item,
+      [`${columnIndex}RowSpan`]: rowSpanMap.get(index) || 0,
+    }));
+  });
+
+  return result;
 };
 
 
@@ -190,7 +209,7 @@ const notifications: React.FC = () => {
       key: '2',
       mydChannel: '短信满意度',
       mydContactPoint: '参评量',
-      mydDate: '3',
+      mydDate: '1',
       mydChains: '4',
     },
     {
@@ -266,7 +285,7 @@ const notifications: React.FC = () => {
   ];
 
   // 呼叫量数据表头
-  const processedData = createNewArr(mockHrData, "hrSpecialArea");
+  const processedData = createNewArr(mockHrData, ["hrSpecialArea"]);
   const hrDataColumns = [
     {
       title: '类型',
@@ -276,14 +295,9 @@ const notifications: React.FC = () => {
           dataIndex: "hrSpecialArea",
           align: "center",
           width: 120,
-          render(text, record, index) {
-            return {
-              children: text,
-              props: {
-                rowSpan: record.rowSpan,
-              }
-            }
-          }
+          onCell: (record) => ({
+            rowSpan: record.hrSpecialAreaRowSpan,
+          }),
         },
         {
           title: '触点',
@@ -313,19 +327,8 @@ const notifications: React.FC = () => {
   ]
 
   // 满意度数据表头
-  const processedData1 = createNewArr(mockMydData, "mydChannel");
-  const processedData2 = createNewArr(mockMydData, "mydContactPoint");
-  const processedData3 = createNewArr(mockMydData, "mydDate");
-  // 合并处理后的数据
-  const processedDataCombined = processedData1.map((item, index) => ({
-    ...item,
-    mydContactPoint: processedData2[index].mydContactPoint,
-    mydDate: processedData3[index].mydDate
-  }));
-
-  console.log(processedData1)
-  console.log(processedData2)
-  console.log(processedData3)
+  // const processedDataCombined = createNewArr(mockMydData, "mydChannel");
+  const processedDataCombined = createNewArr(mockMydData, ["mydChannel", "mydContactPoint","mydDate"]);
   console.log(processedDataCombined)
 
   const mydDataColumns = [
@@ -337,28 +340,18 @@ const notifications: React.FC = () => {
           dataIndex: "mydChannel",
           align: "center",
           width: 110,
-          render(text, record, index) {
-            return {
-              children: text,
-              props: {
-                rowSpan: record.rowSpan,
-              }
-            }
-          }
+          onCell: (record) => ({
+            rowSpan: record.mydChannelRowSpan,
+          }),
         },
         {
           title: '触点',
           dataIndex: "mydContactPoint",
           align: "center",
           width: 80,
-          render(text, record, index) {
-            return {
-              children: text,
-              props: {
-                rowSpan: record.rowSpan,
-              }
-            }
-          }
+          onCell: (record) => ({
+            rowSpan: record.mydContactPointRowSpan,
+          }),
         },
       ]
     },
@@ -367,14 +360,9 @@ const notifications: React.FC = () => {
       dataIndex: "mydDate",
       align: "center",
       width: 130,
-      render(text, record, index) {
-        return {
-          children: text,
-          props: {
-            rowSpan: record.rowSpan,
-          }
-        }
-      }
+      onCell: (record) => ({
+        rowSpan: record.mydDateRowSpan,
+      }),
     },
     {
       title: "环比",
