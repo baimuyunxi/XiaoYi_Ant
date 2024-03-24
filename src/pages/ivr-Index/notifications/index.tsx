@@ -1,12 +1,13 @@
-import {PlusOutlined, SearchOutlined} from '@ant-design/icons';
+import {DownloadOutlined, PlusOutlined, SearchOutlined} from '@ant-design/icons';
 import React, {useEffect, useLayoutEffect, useRef, useState} from 'react';
-import {Card, Col, DatePicker, Row, Space, Button, Table, Divider} from "antd";
+import {Card, Col, DatePicker, Row, Space, Button, Table, Divider, ConfigProviderProps} from "antd";
 import {PageContainer} from "@ant-design/pro-components";
 import moment from "moment";
 import useStyles from './style.style'
 import {TableCallVolumeData, TableSatisfactionData} from './data'
 import {queryCallVolume, querySatisfaction} from './service'
 import {useRequest} from "@umijs/max";
+import * as XLSX from 'xlsx';
 
 const {RangePicker} = DatePicker;
 
@@ -51,7 +52,6 @@ const createNewArr = (data, columnIndexes) => {
 
   return result;
 };
-
 
 const notifications: React.FC = () => {
   // 自定义样式引用
@@ -137,21 +137,21 @@ const notifications: React.FC = () => {
       hrSpecialArea: '10000号整体',
       hrContactPoint: '总呼入量',
       hrDate: "342342",
-      hrChains: '-0.74',
+      hrChains: '-0.74%',
     },
     {
       key: '2',
       hrSpecialArea: '10000号整体',
       hrContactPoint: '人工呼入量',
       hrDate: "12342",
-      hrChains: '-5.44',
+      hrChains: '-5.44%',
     },
     {
       key: '3',
       hrSpecialArea: '10000号整体',
       hrContactPoint: '转人工占比',
-      hrDate: "29.84",
-      hrChains: '-1.7',
+      hrDate: "29.84%",
+      hrChains: '-1.7PP',
     },
     {
       key: '4',
@@ -312,11 +312,6 @@ const notifications: React.FC = () => {
       dataIndex: "hrDate",
       align: "center",
       width: 130,
-      render: (text, record, index) =>{
-        let displayText = text; // 默认显示文本
-        displayText += ((index + 1) % 3 === 0) ? '%' : '';
-        return displayText;
-      }
     },
     {
       title: "环比",
@@ -328,18 +323,16 @@ const notifications: React.FC = () => {
         const value = parseFloat(text); // 将文本转换为浮点数
         const absValue = Math.abs(value);
         let displayText = text; // 默认显示文本
-        // 根据行号决定是否添加% / PP
-        displayText += ((index + 1) % 3 === 0) ? 'PP' : '%';
         // 根据数值的正负和绝对值大小改变颜色
         let style = {};
         // 仅对行号是3的倍数的行进行颜色处理
         if (rowIndex % 3 === 0) {
           if (value < 0 && absValue > 1) {
             // 负数且绝对值大于1，以红色显示
-            style = { color: 'red', fontWeight: 'bold' };
+            style = {color: 'red', fontWeight: 'bold'};
           } else if (value > 0 && absValue > 1) {
             // 正数且绝对值大于1，以绿色显示
-            style = { color: 'green', fontWeight: 'bold' };
+            style = {color: 'green', fontWeight: 'bold'};
           }
         }
 
@@ -406,6 +399,41 @@ const notifications: React.FC = () => {
     },
   ];
 
+  // 合并呼叫量数据和满意度数据导出函数
+  const exportToExcelMain = () => {
+    // 创建一个新的工作簿
+    const wb = XLSX.utils.book_new();
+
+    // 处理第一个数据表（呼叫量数据）
+    const ws1 = XLSX.utils.json_to_sheet(processedData.map(item => {
+      return {
+        "专区": item.hrSpecialArea, // 示例：假设你想将'hrSpecialArea'作为'专区'
+        "触点": item.hrContactPoint, // 类似的，映射每个字段
+        "日期": item.hrDate,
+        "环比": item.hrChains,
+        "备注": item.hrRemarks || "", // 使用 || "" 处理undefined或null
+      }
+    }), {header: ["专区", "触点", "日期", "环比", "备注"], skipHeader: false});
+    XLSX.utils.book_append_sheet(wb, ws1, "呼叫量数据");
+
+    // 处理第二个数据表（满意度数据）
+    const ws2 = XLSX.utils.json_to_sheet(processedDataCombined.map(item => {
+      return {
+        "渠道": item.mydChannel,
+        "触点": item.mydContactPoint,
+        "日期": item.mydDate,
+        "环比": item.mydChains,
+        "备注": item.mydRemarks || "",
+      }
+    }), {header: ["渠道", "触点", "日期", "环比", "备注"], skipHeader: false});
+    XLSX.utils.book_append_sheet(wb, ws2, "满意度数据");
+
+    // 导出Excel文件
+    XLSX.writeFile(wb, `ExportedData.xlsx`);
+  };
+
+
+
   return (
     <PageContainer>
       <Card title="时间选择">
@@ -449,15 +477,22 @@ const notifications: React.FC = () => {
       </Card>
       <div style={{marginTop: 12}}/>
       <Card>
-        <Space direction={"vertical"} size={12}/>
-        <h3>呼叫量数据</h3>
-        <Space direction={"vertical"} size={12}/>
-        <Table columns={hrDataColumns} dataSource={processedData} bordered={true} pagination={false}
-               size={"small"}/>
+        <Space direction={"vertical"} size={12} style={{width: '100%'}}/>
+        <Row justify="space-between" align="middle" gutter={16}>
+          <Col>
+          </Col>
+          <Col>
+            <Button type="primary" shape="round" icon={<DownloadOutlined/>}
+                    onClick={exportToExcelMain}/>
+          </Col>
+        </Row>
         <Divider/>
-        <h3>满意度数据</h3>
+        <Table columns={hrDataColumns} dataSource={processedData} bordered={true} pagination={false}
+               size={"small"} title={() => <h3>呼叫量数据</h3>}
+        />
+        <Divider/>
         <Table columns={mydDataColumns} dataSource={processedDataCombined} bordered={true} pagination={false}
-               size={"small"}/>
+               size={"small"} title={() => <h3>满意度数据</h3>}/>
       </Card>
     </PageContainer>
   );
