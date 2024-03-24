@@ -99,50 +99,6 @@ const notifications: React.FC = () => {
     return startDate === endDate ? startDate : `${startDate} -- ${endDate}`;
   };
 
-  // 点击查询按钮时触发的函数
-  const {loading: searchDataLoading, run: runSearch} = useRequest(
-    async () => {
-      try {
-        // 从状态中获取时间范围
-        const day_ids = dates[0].format("YYYY-MM-DD HH:mm:ss");
-        const day_ide = dates[1].format("YYYY-MM-DD HH:mm:ss");
-        const last_day_ids = comparisonDates[0].format("YYYY-MM-DD HH:mm:ss");
-        const last_day_ide = comparisonDates[1].format("YYYY-MM-DD HH:mm:ss");
-
-        // 调用API
-        const callVolumeResponse = await queryCallVolume({day_ids, day_ide, last_day_ids, last_day_ide});
-        const satisfactionResponse = await querySatisfaction({day_ids, day_ide, last_day_ids, last_day_ide});
-
-        // 响应体打印
-        console.log("Call Volume Response:", callVolumeResponse);
-        console.log("Satisfaction Response:", satisfactionResponse);
-
-        // 处理API响应
-        // ...
-      } catch (e) {
-        console.error("Error fetching data:", e)
-      }
-    },
-    {
-      manual: true, // 手动触发请求
-    }
-  );
-
-  const [dataLoaded, setDataLoaded] = useState(false);
-
-  // 使用useEffect在组件加载时调用函数
-  useEffect(() => {
-    // 延迟
-    setTimeout(() => {
-      setDataLoaded(true);
-    }, 1000);
-
-    // 当数据加载完成后调用 runSearch
-    if (dataLoaded) {
-      runSearch();
-    }
-  }, [dataLoaded]);
-
   // 模拟数据信息
   const mockHrData = [{}];
   const mockMydData = [{}];
@@ -618,6 +574,131 @@ const notifications: React.FC = () => {
     default:
       hrTableData = [];
   }
+  ;
+
+  /**
+   * API 调用处理
+   */
+
+    // 点击查询按钮时触发的函数
+  const {loading: searchDataLoading, run: runSearch} = useRequest(
+      async () => {
+        try {
+          // 从状态中获取时间范围
+          const day_ids = dates[0].format("YYYY-MM-DD HH:mm:ss");
+          const day_ide = dates[1].format("YYYY-MM-DD HH:mm:ss");
+          const last_day_ids = comparisonDates[0].format("YYYY-MM-DD HH:mm:ss");
+          const last_day_ide = comparisonDates[1].format("YYYY-MM-DD HH:mm:ss");
+
+          // 调用API
+          const callVolumeResponse = await queryCallVolume({day_ids, day_ide, last_day_ids, last_day_ide});
+          const satisfactionResponse = await querySatisfaction({day_ids, day_ide, last_day_ids, last_day_ide});
+
+          // 响应体打印
+          console.log("Call Volume Response:", callVolumeResponse);
+          console.log("Satisfaction Response:", satisfactionResponse);
+
+          // 处理API响应
+          // ...
+        } catch (e) {
+          console.error("Error fetching data:", e)
+        }
+      },
+      {
+        manual: true, // 手动触发请求
+      }
+    );
+
+  const [dataLoaded, setDataLoaded] = useState(false);
+
+  // 使用useEffect在组件加载时调用函数
+  useEffect(() => {
+    // 延迟
+    setTimeout(() => {
+      setDataLoaded(true);
+    }, 1000);
+
+    // 当数据加载完成后调用 runSearch
+    if (dataLoaded) {
+      runSearch();
+    }
+  }, [dataLoaded]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      // 准备 API 调用的参数
+      const params = {
+        day_ids: dates[0].format("YYYY-MM-DD HH:mm:ss"),
+        day_ide: dates[1].format("YYYY-MM-DD HH:mm:ss"),
+        last_day_ids: comparisonDates?.[0].format("YYYY-MM-DD HH:mm:ss"),
+        last_day_ide: comparisonDates?.[1].format("YYYY-MM-DD HH:mm:ss"),
+      };
+
+      // 根据当前展示的模块和 Tab 调用相应的 API
+      if (currentCard === 'callVolume') {
+        switch (hrselectedTabKey) {
+          case 'rgSense':
+            const senseResponse = await queryCallSense(params);
+            // TODO: 处理响应数据
+            break;
+          case 'rgActive':
+            const initiativeResponse = await queryCallInitiative(params);
+            // TODO: 处理响应数据
+            break;
+          case 'rgRejection':
+            const rejectionResponse = await queryCallRejection(params);
+            // TODO: 处理响应数据
+            break;
+          // 其他 case...
+        }
+      } else if (currentCard === 'satisfaction') {
+        switch (selectedTabKey) {
+          case 'mydOverall':
+            const overallResponse = await querySatOverall(params);
+            // TODO: 处理响应数据
+            break;
+          case 'mydSms':
+            const mesResponse = await querySatMes(params);
+            // TODO: 处理响应数据
+            break;
+          case 'mydWechat':
+            const chatResponse = await querySatChat(params);
+            // TODO: 处理响应数据
+            break;
+          // 其他 case...
+        }
+      }
+    };
+
+    fetchData();
+  }, [currentCard, hrselectedTabKey, selectedTabKey, dates, comparisonDates]);
+
+
+  const handleDetailClick = async () => {
+    const params = {
+      day_ids: dates[0].format("YYYY-MM-DD HH:mm:ss"),
+      day_ide: dates[1].format("YYYY-MM-DD HH:mm:ss"),
+      last_day_ids: comparisonDates?.[0].format("YYYY-MM-DD HH:mm:ss"),
+      last_day_ide: comparisonDates?.[1].format("YYYY-MM-DD HH:mm:ss"),
+    };
+
+
+    if (currentCard === 'callVolume' && hrselectedTabKey === 'rgSense') {
+      const detailResponse = await queryCallSenseDetail(params);
+      // TODO: 处理响应数据
+    } else if (currentCard === 'callVolume' && hrselectedTabKey === 'rgActive') {
+      const detailResponse = await queryCallInitiativeDetail(params);
+      // TODO: 处理响应数据
+    } else if (currentCard === 'callVolume' && hrselectedTabKey === 'rgRejection') {
+      const detailResponse = await queryCallRejectionDetail(params);
+      // TODO: 处理响应数据
+    }
+    // 对于满意度详情，不区分当前是整体/短信/微信
+    else if (currentCard === 'satisfaction') {
+      const satDetailResponse = await querySatDetail(params);
+      // TODO: 处理响应数据
+    }
+  };
 
   return (
     <PageContainer>
@@ -690,6 +771,7 @@ const notifications: React.FC = () => {
         </Row>
       </Card>
       <div style={{marginTop: 12}}/>
+
       {currentCard === 'callVolume' && (
         <Card
           title={"呼入详情"}
@@ -708,13 +790,21 @@ const notifications: React.FC = () => {
                 icon={<DownloadOutlined/>}
                 onClick={exportToExcelCallVolume}
               />
-              <Button type="primary" shape="round" icon={<FileSearchOutlined/>}>详情</Button>
+              <Button
+                type="primary"
+                shape="round"
+                icon={<FileSearchOutlined/>}
+                onClick={handleDetailClick}
+              >
+                详情
+              </Button>
             </Space>
           }
         >
           <Table columns={hrDetailTableHead} dataSource={hrTableData}/>
         </Card>
       )}
+
       {currentCard === 'satisfaction' && (
         <Card
           title={"满意度详情"}
@@ -733,7 +823,14 @@ const notifications: React.FC = () => {
                 icon={<DownloadOutlined/>}
                 onClick={exportToExcelSatisfaction}
               />
-              <Button type="primary" shape="round" icon={<FileSearchOutlined/>}>详情</Button>
+              <Button
+                type="primary"
+                shape="round"
+                icon={<FileSearchOutlined/>}
+                onClick={handleDetailClick}
+              >
+                详情
+              </Button>
             </Space>
           }
         >

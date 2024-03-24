@@ -74,9 +74,12 @@ export async function querySatisfaction(params: {
 }
 
 // 整体满意度
-export async function querySatOverall():Promise<{
-  data:{}
-}>{
+export async function querySatOverall(params: {
+  last_day_ids: string | undefined;
+  last_day_ide: string | undefined;
+  day_ide: string;
+  day_ids: string
+}):Promise<{ data: {} }>{
   return request('/api/ivrIndex/callSatOverall')
 }
 
