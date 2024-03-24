@@ -1,10 +1,9 @@
-import {DownloadOutlined, PlusOutlined, SearchOutlined} from '@ant-design/icons';
+import {DownloadOutlined, PlusOutlined, RollbackOutlined, SearchOutlined} from '@ant-design/icons';
 import React, {useEffect, useLayoutEffect, useRef, useState} from 'react';
-import {Card, Col, DatePicker, Row, Space, Button, Table, Divider, ConfigProviderProps} from "antd";
+import {Card, Col, DatePicker, Row, Space, Button, Table, Divider, ConfigProviderProps, Flex} from "antd";
 import {PageContainer} from "@ant-design/pro-components";
 import moment from "moment";
 import useStyles from './style.style'
-import {TableCallVolumeData, TableSatisfactionData} from './data'
 import {queryCallVolume, querySatisfaction} from './service'
 import {useRequest} from "@umijs/max";
 import * as XLSX from 'xlsx';
@@ -131,158 +130,9 @@ const notifications: React.FC = () => {
     }
   }, [dataLoaded]);
 
-  const mockHrData = [
-    {
-      key: '1',
-      hrSpecialArea: '10000号整体',
-      hrContactPoint: '总呼入量',
-      hrDate: "342342",
-      hrChains: '-0.74%',
-    },
-    {
-      key: '2',
-      hrSpecialArea: '10000号整体',
-      hrContactPoint: '人工呼入量',
-      hrDate: "12342",
-      hrChains: '-5.44%',
-    },
-    {
-      key: '3',
-      hrSpecialArea: '10000号整体',
-      hrContactPoint: '转人工占比',
-      hrDate: "29.84%",
-      hrChains: '-1.7PP',
-    },
-    {
-      key: '4',
-      hrSpecialArea: '互联网卡专区',
-      hrContactPoint: '总呼入量',
-      hrDate: "342322",
-      hrChains: '-0.74',
-    },
-    {
-      key: '5',
-      hrSpecialArea: '互联网卡专区',
-      hrContactPoint: '人工呼入量',
-      hrDate: "1232",
-      hrChains: '-4.4',
-    },
-    {
-      key: '6',
-      hrSpecialArea: '互联网卡专区',
-      hrContactPoint: '转人工占比',
-      hrDate: "3",
-      hrChains: '1.74',
-    },
-    {
-      key: '7',
-      hrSpecialArea: '涉诈专区',
-      hrContactPoint: '总呼入量',
-      hrDate: "342",
-      hrChains: '-0.4',
-    },
-    {
-      key: '8',
-      hrSpecialArea: '涉诈专区',
-      hrContactPoint: '人工呼入量',
-      hrDate: "42",
-      hrChains: '-5.44',
-    },
-    {
-      key: '9',
-      hrSpecialArea: '涉诈专区',
-      hrContactPoint: '转人工占比',
-      hrDate: "2",
-      hrChains: '-0.74',
-    },
-  ];
-
-  const mockMydData = [
-    {
-      key: '1',
-      mydChannel: '短信满意度',
-      mydContactPoint: '参评量',
-      mydDate: '1',
-      mydChains: '4',
-    },
-    {
-      key: '2',
-      mydChannel: '短信满意度',
-      mydContactPoint: '参评量',
-      mydDate: '1',
-      mydChains: '4',
-    },
-    {
-      key: '3',
-      mydChannel: '短信满意度',
-      mydContactPoint: '满意率',
-      mydDate: '5',
-      mydChains: '6',
-    },
-    {
-      key: '4',
-      mydChannel: '在线满意度',
-      mydContactPoint: '参评量',
-      mydDate: '7',
-      mydChains: '8',
-    },
-    {
-      key: '5',
-      mydChannel: '在线满意度',
-      mydContactPoint: '参评量',
-      mydDate: '9',
-      mydChains: '10',
-    },
-    {
-      key: '6',
-      mydChannel: '在线满意度',
-      mydContactPoint: '满意率',
-      mydDate: '11',
-      mydChains: '12',
-    },
-    {
-      key: '7',
-      mydChannel: '微信满意度',
-      mydContactPoint: '参评量',
-      mydDate: '13',
-      mydChains: '14',
-    },
-    {
-      key: '8',
-      mydChannel: '微信满意度',
-      mydContactPoint: '参评量',
-      mydDate: '15',
-      mydChains: '16',
-    },
-    {
-      key: '9',
-      mydChannel: '微信满意度',
-      mydContactPoint: '满意率',
-      mydDate: '17',
-      mydChains: '18',
-    },
-    {
-      key: '10',
-      mydChannel: '整体满意度',
-      mydContactPoint: '参评量',
-      mydDate: '18',
-      mydChains: '19',
-    },
-    {
-      key: '11',
-      mydChannel: '整体满意度',
-      mydContactPoint: '参评量',
-      mydDate: '19',
-      mydChains: '20',
-    },
-    {
-      key: '12',
-      mydChannel: '整体满意度',
-      mydContactPoint: '满意率',
-      mydDate: '21',
-      mydChains: '22',
-    },
-  ];
+  // 模拟数据信息
+  const mockHrData = [{}];
+  const mockMydData = [{}];
 
   // 呼叫量数据表头
   const processedData = createNewArr(mockHrData, ["hrSpecialArea"]);
@@ -348,8 +198,7 @@ const notifications: React.FC = () => {
 
   // 满意度数据表头
   const processedDataCombined = createNewArr(mockMydData, ["mydChannel", "mydContactPoint", "mydDate", "mydChains"]);
-  console.log(processedDataCombined)
-
+  // console.log(processedDataCombined)
   const mydDataColumns = [
     {
       title: '指标',
@@ -428,10 +277,167 @@ const notifications: React.FC = () => {
     }), {header: ["渠道", "触点", "日期", "环比", "备注"], skipHeader: false});
     XLSX.utils.book_append_sheet(wb, ws2, "满意度数据");
 
+    // 使用moment获取当前时间，并格式化为YYYYMMDDHHmmss
+    const currentDateTime = moment().format('YYYYMMDD');
+    // 构造文件名，格式为 dayNewXXX.xlsx，XXX是当前时间
+    const fileName = `DayNew${formatDateRange(dates)}.xlsx`;
+
     // 导出Excel文件
-    XLSX.writeFile(wb, `ExportedData.xlsx`);
+    XLSX.writeFile(wb, fileName);
   };
 
+
+  /**
+   * 详情页面钻取等配置
+   */
+  const rgTabListNoTitle = [
+    {
+      key: 'rgSence',
+      label: '场景'
+    },
+    {
+      key: 'rgActive',
+      label: '主动'
+    },
+    {
+      key: 'rgRejection',
+      label: '拒识'
+    },
+  ];
+
+  const hydTabListNoTitle = [
+    {
+      key: 'hydOverall',
+      label: '整体'
+    },
+    {
+      key: 'mydSms',
+      label: '短信'
+    },
+    {
+      key: 'mydWechat',
+      label: '微信'
+    },
+  ];
+
+  /**
+   * 动态卡片切换实现
+   */
+  const [currentCard, setCurrentCard] = useState('overview');
+  const showCard = (cardName) => {
+    setCurrentCard(cardName);
+  };
+
+  /**
+   * 满意度相关详情处理
+   */
+  const mydDetailTableHead = [
+    {
+      title: '场景',
+      dataIndex: "mydDetailSense",
+      align: "center",
+    },
+    {
+      title: '发送量',
+      children: [
+        {
+          title: '本期',
+          dataIndex: "mydDetailSendB",
+          align: "center",
+        },
+        {
+          title: '上期',
+          dataIndex: "mydDetailSendS",
+          align: "center",
+        },
+      ]
+    },
+    {
+      title: '参评量',
+      children: [
+        {
+          title: '本期',
+          dataIndex: "mydDetailSendB",
+          align: "center",
+        },
+        {
+          title: '上期',
+          dataIndex: "mydDetailSendS",
+          align: "center",
+        },
+      ]
+    },
+    {
+      title: '满意量',
+      children: [
+        {
+          title: '本期',
+          dataIndex: "mydDetailSendB",
+          align: "center",
+        },
+        {
+          title: '上期',
+          dataIndex: "mydDetailSendS",
+          align: "center",
+        },
+      ]
+    },
+    {
+      title: '一般量',
+      children: [
+        {
+          title: '本期',
+          dataIndex: "mydDetailSendB",
+          align: "center",
+        },
+        {
+          title: '上期',
+          dataIndex: "mydDetailSendS",
+          align: "center",
+        },
+      ]
+    },
+    {
+      title: '不满意量',
+      children: [
+        {
+          title: '本期',
+          dataIndex: "mydDetailDisRateB",
+          align: "center",
+        },
+        {
+          title: '上期',
+          dataIndex: "mydDetailDisRateS",
+          align: "center",
+        },
+      ]
+    },
+    {
+      title: '满意率',
+      children: [
+        {
+          title: '本期',
+          dataIndex: "mydDetailSatRateB",
+          align: "center",
+        },
+        {
+          title: '上期',
+          dataIndex: "mydDetailSatRateS",
+          align: "center",
+        },
+      ]
+    },
+    {
+      title: "影响整体满意度",
+      dataIndex: "mydDetailEffect",
+      align: "center",
+    }
+  ];
+
+
+  /**
+   * 呼入相关详情处理
+   */
 
 
   return (
@@ -477,23 +483,85 @@ const notifications: React.FC = () => {
       </Card>
       <div style={{marginTop: 12}}/>
       <Card>
-        <Space direction={"vertical"} size={12} style={{width: '100%'}}/>
         <Row justify="space-between" align="middle" gutter={16}>
           <Col>
+            <Flex gap="small" wrap="wrap">
+              <Button
+                onClick={() => showCard('callVolume')}
+                disabled={currentCard === 'callVolume'}
+              >呼入
+              </Button>
+              <Button
+                onClick={() => showCard('satisfaction')}
+                disabled={currentCard === 'satisfaction'}
+              >满意度
+              </Button>
+            </Flex>
           </Col>
           <Col>
-            <Button type="primary" shape="round" icon={<DownloadOutlined/>}
-                    onClick={exportToExcelMain}/>
+            <Button
+              className={styles.greenButton}
+              type="dashed"
+              icon={<RollbackOutlined/>}
+              disabled={currentCard === 'overview'}
+              onClick={() => showCard('overview')}
+            >返回
+            </Button>
           </Col>
         </Row>
-        <Divider/>
-        <Table columns={hrDataColumns} dataSource={processedData} bordered={true} pagination={false}
-               size={"small"} title={() => <h3>呼叫量数据</h3>}
-        />
-        <Divider/>
-        <Table columns={mydDataColumns} dataSource={processedDataCombined} bordered={true} pagination={false}
-               size={"small"} title={() => <h3>满意度数据</h3>}/>
       </Card>
+      <div style={{marginTop: 12}}/>
+      {currentCard === 'callVolume' && (
+        <Card
+          title={"呼入详情"}
+          style={{width: '100%'}}
+          tabList={rgTabListNoTitle}
+          tabProps={{
+            size: 'middle',
+          }}
+          tabBarExtraContent={
+            <Button type="primary" shape="round" icon={<DownloadOutlined/>}/>
+          }
+        >
+        </Card>
+      )}
+      {currentCard === 'satisfaction' && (
+        <Card
+          title={"满意度详情"}
+          style={{width: '100%'}}
+          tabList={hydTabListNoTitle}
+          tabProps={{
+            size: 'middle',
+          }}
+          tabBarExtraContent={
+            <Button type="primary" shape="round" icon={<DownloadOutlined/>}/>
+          }
+        >
+          <Table columns={mydDetailTableHead}/>
+        </Card>
+      )}
+      {/*日报卡片*/}
+      {currentCard === 'overview' && (
+        <Card>
+          <Space direction={"vertical"} size={12} style={{width: '100%'}}/>
+          <Row justify="space-between" align="middle" gutter={16}>
+            <Col>
+              <h1 className={styles.noMarginH1}>概览</h1>
+            </Col>
+            <Col>
+              <Button type="primary" shape="round" icon={<DownloadOutlined/>}
+                      onClick={exportToExcelMain}/>
+            </Col>
+          </Row>
+          <Divider/>
+          <Table columns={hrDataColumns} dataSource={processedData} bordered={true} pagination={false}
+                 size={"small"} title={() => <h3>呼叫量数据</h3>}
+          />
+          <Divider/>
+          <Table columns={mydDataColumns} dataSource={processedDataCombined} bordered={true} pagination={false}
+                 size={"small"} title={() => <h3>满意度数据</h3>}/>
+        </Card>
+      )}
     </PageContainer>
   );
 };

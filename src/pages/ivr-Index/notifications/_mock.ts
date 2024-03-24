@@ -62,7 +62,7 @@ const TableCallVolumeData = [
           hrChains: '-0.74',
         },
       ],
-      "remark":[
+      "remark": [
         {
           hrRemarks: "场景转人工环比+/-xxPP，影响整体转人工+/-xxPP"
         },
@@ -78,7 +78,8 @@ const TableCallVolumeData = [
 ];
 
 const TableSatisfactionData = [
-  {"success": true,
+  {
+    "success": true,
     "code": 20000,
     "message": "成功",
     "data": {
@@ -156,65 +157,62 @@ const TableSatisfactionData = [
           mydChains: '22',
         },
       ],
-      "remark":[
+      "remark": [
         {
-          mydRemarks:'1场景环比+/-xxPP，影响短信整体满意度+/-xxPP',
+          mydRemarks: '1场景环比+/-xxPP，影响短信整体满意度+/-xxPP',
         },
         {
-          mydRemarks:'2场景环比+/-xxPP，影响短信整体满意度+/-xxPP',
+          mydRemarks: '2场景环比+/-xxPP，影响短信整体满意度+/-xxPP',
         },
         {
-          mydRemarks:'3场景环比+/-xxPP，影响短信整体满意度+/-xxPP',
+          mydRemarks: '3场景环比+/-xxPP，影响短信整体满意度+/-xxPP',
         },
         {
-          mydRemarks:'1场景环比+/-xxPP，影响在线整体满意度+/-xxPP',
+          mydRemarks: '1场景环比+/-xxPP，影响在线整体满意度+/-xxPP',
         },
         {
-          mydRemarks:'2场景环比+/-xxPP，影响在线整体满意度+/-xxPP',
+          mydRemarks: '2场景环比+/-xxPP，影响在线整体满意度+/-xxPP',
         },
         {
-          mydRemarks:'3场景环比+/-xxPP，影响在线整体满意度+/-xxPP',
+          mydRemarks: '3场景环比+/-xxPP，影响在线整体满意度+/-xxPP',
         },
         {
-          mydRemarks:'1场景环比+/-xxPP，影响微信整体满意度+/-xxPP',
+          mydRemarks: '1场景环比+/-xxPP，影响微信整体满意度+/-xxPP',
         },
         {
-          mydRemarks:'2场景环比+/-xxPP，影响微信整体满意度+/-xxPP',
+          mydRemarks: '2场景环比+/-xxPP，影响微信整体满意度+/-xxPP',
         },
         {
-          mydRemarks:'3场景环比+/-xxPP，影响微信整体满意度+/-xxPP',
+          mydRemarks: '3场景环比+/-xxPP，影响微信整体满意度+/-xxPP',
         },
         {
-          mydRemarks:'1场景环比+/-xxPP，影响整体满意度+/-xxPP',
+          mydRemarks: '1场景环比+/-xxPP，影响整体满意度+/-xxPP',
         },
         {
-          mydRemarks:'2场景环比+/-xxPP，影响整体满意度+/-xxPP',
+          mydRemarks: '2场景环比+/-xxPP，影响整体满意度+/-xxPP',
         },
         {
-          mydRemarks:'3场景环比+/-xxPP，影响整体满意度+/-xxPP',
+          mydRemarks: '3场景环比+/-xxPP，影响整体满意度+/-xxPP',
         },
       ]
     }
   },
 ];
 
-function getIvrCallVolume(_: Request, res: Response) {
-  return res.json({
-    data: {
-      TableCallVolumeData,
-    },
-  });
+function getIvrCallVolume(req: Request, res: Response) {
+  const {day_ids, day_ide, last_day_ids, last_day_ide} = req.body;
+  console.log("getIvrCallVolume 接收到的请求体数据:", req.body);
+
+  return TableCallVolumeData;
 }
 
-function getIvrSatisfaction(_: Request, res: Response) {
-  return res.json({
-    data: {
-      TableSatisfactionData,
-    },
-  });
+function getIvrSatisfaction(req: Request, res: Response) {
+  const {day_ids, day_ide, last_day_ids, last_day_ide} = req.body;
+
+  return TableSatisfactionData;
 }
 
 export default {
-  'POST /api/ivrIndex/callVolume': getIvrCallVolume,
-  'POST /api/ivrIndex/Satisfaction': getIvrSatisfaction,
+  'POST  /api/ivrIndex/callVolume': getIvrCallVolume,
+  'POST  /api/ivrIndex/Satisfaction': getIvrSatisfaction,
 };

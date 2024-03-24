@@ -1,27 +1,30 @@
-import {request} from "@umijs/max";
-import type {TableCallVolumeData, TableSatisfactionData} from './data.d';
+import { request } from '@umijs/max';
 
-export async function queryCallVolume(p: {
+export async function queryCallVolume(params: {
   last_day_ids: string;
   last_day_ide: string;
   day_ide: string;
   day_ids: string
-}): Promise<{ data: { TableCallVolumeData: TableCallVolumeData[] } }> {
+}) {
+  console.log("走到了这里", params)
   return request('/api/ivrIndex/callVolume', {
     method: 'POST',
-    data: p,
+    data: {
+      ...params,
+    },
   });
 }
 
-export async function querySatisfaction(p: {
+export async function querySatisfaction(params: {
   last_day_ids: string;
   last_day_ide: string;
   day_ide: string;
   day_ids: string
-}): Promise<{ data: { TableSatisfactionData: TableSatisfactionData[] } }> {
+}) {
   return request('/api/ivrIndex/Satisfaction', {
     method: 'POST',
-    data: p,
+    data: {
+      ...params,
+    },
   });
 }
-
