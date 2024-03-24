@@ -13,7 +13,7 @@ const useStyles = createStyles(({token}) => {
       flex: 'none',
       whiteSpace: 'nowrap',
       paddingLeft: '22px !important',
-      paddingRight:'0px !important'
+      paddingRight: '0px !important'
     },
     buttonCol: {
       flex: 'none',

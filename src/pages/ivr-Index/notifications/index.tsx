@@ -203,7 +203,7 @@ const notifications: React.FC = () => {
       mydChannel: '短信满意度',
       mydContactPoint: '参评量',
       mydDate: '1',
-      mydChains: '2',
+      mydChains: '4',
     },
     {
       key: '2',
@@ -311,13 +311,40 @@ const notifications: React.FC = () => {
       title: formatDateRange(dates),
       dataIndex: "hrDate",
       align: "center",
-      width: 130
+      width: 130,
+      render: (text, record, index) =>{
+        let displayText = text; // 默认显示文本
+        displayText += ((index + 1) % 3 === 0) ? '%' : '';
+        return displayText;
+      }
     },
     {
       title: "环比",
-      dataIndexL: "hrChains",
+      dataIndex: "hrChains",
       align: "center",
-      width: 120
+      width: 120,
+      render: (text, record, index) => {
+        const rowIndex = index + 1;
+        const value = parseFloat(text); // 将文本转换为浮点数
+        const absValue = Math.abs(value);
+        let displayText = text; // 默认显示文本
+        // 根据行号决定是否添加% / PP
+        displayText += ((index + 1) % 3 === 0) ? 'PP' : '%';
+        // 根据数值的正负和绝对值大小改变颜色
+        let style = {};
+        // 仅对行号是3的倍数的行进行颜色处理
+        if (rowIndex % 3 === 0) {
+          if (value < 0 && absValue > 1) {
+            // 负数且绝对值大于1，以红色显示
+            style = { color: 'red', fontWeight: 'bold' };
+          } else if (value > 0 && absValue > 1) {
+            // 正数且绝对值大于1，以绿色显示
+            style = { color: 'green', fontWeight: 'bold' };
+          }
+        }
+
+        return <span style={style}>{displayText}</span>;
+      }
     },
     {
       title: "备注",
@@ -327,8 +354,7 @@ const notifications: React.FC = () => {
   ]
 
   // 满意度数据表头
-  // const processedDataCombined = createNewArr(mockMydData, "mydChannel");
-  const processedDataCombined = createNewArr(mockMydData, ["mydChannel", "mydContactPoint","mydDate"]);
+  const processedDataCombined = createNewArr(mockMydData, ["mydChannel", "mydContactPoint", "mydDate", "mydChains"]);
   console.log(processedDataCombined)
 
   const mydDataColumns = [
@@ -366,15 +392,18 @@ const notifications: React.FC = () => {
     },
     {
       title: "环比",
-      dataIndexL: "mydChains",
+      dataIndex: "mydChains",
       align: "center",
-      width: 120
+      width: 120,
+      onCell: (record) => ({
+        rowSpan: record.mydChainsRowSpan,
+      }),
     },
     {
       title: "备注",
       dataIndex: "mydRemarks",
       align: "center"
-    }
+    },
   ];
 
   return (
@@ -423,10 +452,12 @@ const notifications: React.FC = () => {
         <Space direction={"vertical"} size={12}/>
         <h3>呼叫量数据</h3>
         <Space direction={"vertical"} size={12}/>
-        <Table columns={hrDataColumns} dataSource={processedData} bordered={true} pagination={false}/>
+        <Table columns={hrDataColumns} dataSource={processedData} bordered={true} pagination={false}
+               size={"small"}/>
         <Divider/>
         <h3>满意度数据</h3>
-        <Table columns={mydDataColumns} dataSource={processedDataCombined} bordered={true} pagination={false}/>
+        <Table columns={mydDataColumns} dataSource={processedDataCombined} bordered={true} pagination={false}
+               size={"small"}/>
       </Card>
     </PageContainer>
   );

@@ -1,6 +1,5 @@
 import {request} from "@umijs/max";
 import type {TableCallVolumeData, TableSatisfactionData} from './data.d';
-import {queryBasicProfile} from "@/pages/profile/basic/service";
 
 export async function queryCallVolume(p: {
   last_day_ids: string;
