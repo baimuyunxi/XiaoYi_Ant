@@ -1,10 +1,23 @@
-import {DownloadOutlined, PlusOutlined, RollbackOutlined, SearchOutlined} from '@ant-design/icons';
+import {DownloadOutlined, FileSearchOutlined, PlusOutlined, RollbackOutlined, SearchOutlined} from '@ant-design/icons';
 import React, {useEffect, useLayoutEffect, useRef, useState} from 'react';
 import {Card, Col, DatePicker, Row, Space, Button, Table, Divider, ConfigProviderProps, Flex} from "antd";
 import {PageContainer} from "@ant-design/pro-components";
 import moment from "moment";
 import useStyles from './style.style'
-import {queryCallVolume, querySatisfaction} from './service'
+import {
+  queryCallVolume,
+  queryCallSense,
+  querySatisfaction,
+  queryCallSenseDetail,
+  queryCallInitiative,
+  queryCallInitiativeDetail,
+  queryCallRejection,
+  queryCallRejectionDetail,
+  querySatOverall,
+  querySatMes,
+  querySatChat,
+  querySatDetail
+} from './service'
 import {useRequest} from "@umijs/max";
 import * as XLSX from 'xlsx';
 
@@ -14,35 +27,35 @@ const {RangePicker} = DatePicker;
 // 表格支持行/列合并，使用 render 里的单元格属性 colSpan 或者 rowSpan 设值为 0 时，设置的表格不会渲染。
 // 合并数组单元格
 const createNewArr = (data, columnIndexes) => {
-  let result = [...data]; // Clone the original data to maintain immutability
+  let result = [...data]; // 克隆原始数据以保持不变性
 
   columnIndexes.forEach((columnIndex) => {
     let lastValue = null;
     let count = 0;
 
-    // Temporarily store rowSpan values for the current column
+    // 临时存储当前列的 rowSpan 值
     const rowSpanMap = new Map();
 
-    // Calculate rowSpan values
+    // 计算 rowSpan 值
     result.forEach((item, index) => {
       if (item[columnIndex] !== lastValue) {
         if (count > 0) {
-          rowSpanMap.set(index - count, count); // Store the rowSpan for the first item in a sequence
+          rowSpanMap.set(index - count, count); // 按顺序存储第一项的 rowSpan
         }
         lastValue = item[columnIndex];
-        count = 1; // Reset count for the new value
+        count = 1; // 重置新值的计数
       } else {
-        count += 1; // Increment count for identical sequential values
-        rowSpanMap.set(index, 0); // Subsequent items in a sequence get a rowSpan of 0
+        count += 1; // 相同顺序值的增量计数
+        rowSpanMap.set(index, 0); // 序列中的后续项的 rowSpan 为 0
       }
 
-      // Handle the last sequence in the data
+      // 处理数据中的最后一个序列
       if (index === result.length - 1 && count > 0) {
         rowSpanMap.set(index - count + 1, count);
       }
     });
 
-    // Apply rowSpan values to the result
+    // 将 rowSpan 值应用于结果
     result = result.map((item, index) => ({
       ...item,
       [`${columnIndex}RowSpan`]: rowSpanMap.get(index) || 0,
@@ -248,41 +261,100 @@ const notifications: React.FC = () => {
     },
   ];
 
-  // 合并呼叫量数据和满意度数据导出函数
+  /**
+   * 文件功能导出区
+   */
+    // 合并呼叫量数据和满意度数据导出函数
   const exportToExcelMain = () => {
-    // 创建一个新的工作簿
+      // 创建一个新的工作簿
+      const wb = XLSX.utils.book_new();
+
+      // 处理第一个数据表（呼叫量数据）
+      const ws1 = XLSX.utils.json_to_sheet(processedData.map(item => {
+        return {
+          "专区": item.hrSpecialArea, // 示例：假设你想将'hrSpecialArea'作为'专区'
+          "触点": item.hrContactPoint, // 类似的，映射每个字段
+          "日期": item.hrDate,
+          "环比": item.hrChains,
+          "备注": item.hrRemarks || "", // 使用 || "" 处理undefined或null
+        }
+      }), {header: ["专区", "触点", formatDateRange(dates), "环比", "备注"], skipHeader: false});
+      XLSX.utils.book_append_sheet(wb, ws1, "呼叫量数据");
+
+      // 处理第二个数据表（满意度数据）
+      const ws2 = XLSX.utils.json_to_sheet(processedDataCombined.map(item => {
+        return {
+          "渠道": item.mydChannel,
+          "触点": item.mydContactPoint,
+          "日期": item.mydDate,
+          "环比": item.mydChains,
+          "备注": item.mydRemarks || "",
+        }
+      }), {header: ["渠道", "触点", formatDateRange(dates), "环比", "备注"], skipHeader: false});
+      XLSX.utils.book_append_sheet(wb, ws2, "满意度数据");
+
+      // 使用moment获取当前时间，并格式化为YYYYMMDDHHmmss
+      const currentDateTime = moment().format('YYYYMMDD');
+      // 构造文件名，格式为 dayNewXXX.xlsx，XXX是当前时间
+      const fileName = `DayNew${formatDateRange(dates)}.xlsx`;
+
+      // 导出Excel文件
+      XLSX.writeFile(wb, fileName);
+    };
+
+  // 满意度详情维度展示导出
+  const exportToExcelSatisfaction = () => {
     const wb = XLSX.utils.book_new();
 
-    // 处理第一个数据表（呼叫量数据）
-    const ws1 = XLSX.utils.json_to_sheet(processedData.map(item => {
-      return {
-        "专区": item.hrSpecialArea, // 示例：假设你想将'hrSpecialArea'作为'专区'
-        "触点": item.hrContactPoint, // 类似的，映射每个字段
-        "日期": item.hrDate,
-        "环比": item.hrChains,
-        "备注": item.hrRemarks || "", // 使用 || "" 处理undefined或null
+    // 将嵌套的表头转换为一维数组
+    const flatColumns = mydDetailTableHead.reduce((acc, item) => {
+      if (item.children) {
+        return [...acc, ...item.children.map(child => ({...child, title: `${item.title} ${child.title}`}))];
       }
-    }), {header: ["专区", "触点", "日期", "环比", "备注"], skipHeader: false});
-    XLSX.utils.book_append_sheet(wb, ws1, "呼叫量数据");
+      return [...acc, item];
+    }, []);
 
-    // 处理第二个数据表（满意度数据）
-    const ws2 = XLSX.utils.json_to_sheet(processedDataCombined.map(item => {
-      return {
-        "渠道": item.mydChannel,
-        "触点": item.mydContactPoint,
-        "日期": item.mydDate,
-        "环比": item.mydChains,
-        "备注": item.mydRemarks || "",
-      }
-    }), {header: ["渠道", "触点", "日期", "环比", "备注"], skipHeader: false});
-    XLSX.utils.book_append_sheet(wb, ws2, "满意度数据");
+    const ws = XLSX.utils.json_to_sheet(mydTableData.map(item => {
+      const row = {};
+      flatColumns.forEach(col => {
+        row[col.title] = item[col.dataIndex];
+      });
+      return row;
+    }), {header: flatColumns.map(col => col.title), skipHeader: false});
 
-    // 使用moment获取当前时间，并格式化为YYYYMMDDHHmmss
+    XLSX.utils.book_append_sheet(wb, ws, "满意度数据");
+
     const currentDateTime = moment().format('YYYYMMDD');
-    // 构造文件名，格式为 dayNewXXX.xlsx，XXX是当前时间
-    const fileName = `DayNew${formatDateRange(dates)}.xlsx`;
+    const fileName = `detail${currentDateTime}.xlsx`;
 
-    // 导出Excel文件
+    XLSX.writeFile(wb, fileName);
+  };
+
+  // 呼入详情维度展示导出
+  const exportToExcelCallVolume = () => {
+    const wb = XLSX.utils.book_new();
+
+    // 处理可能的嵌套表头
+    const flatColumns = hrDetailTableHead.reduce((acc, item) => {
+      if (item.children) {
+        return [...acc, ...item.children.map(child => ({...child, title: `${item.title} ${child.title}`}))];
+      }
+      return [...acc, item];
+    }, []);
+
+    const ws = XLSX.utils.json_to_sheet(hrTableData.map(item => {
+      const row = {};
+      flatColumns.forEach(col => {
+        row[col.title] = item[col.dataIndex];
+      });
+      return row;
+    }), {header: flatColumns.map(col => col.title), skipHeader: false});
+
+    XLSX.utils.book_append_sheet(wb, ws, "呼入详情数据");
+
+    const currentDateTime = moment().format('YYYYMMDD');
+    const fileName = `CallVolumeDetails${currentDateTime}.xlsx`;
+
     XLSX.writeFile(wb, fileName);
   };
 
@@ -292,7 +364,7 @@ const notifications: React.FC = () => {
    */
   const rgTabListNoTitle = [
     {
-      key: 'rgSence',
+      key: 'rgSense',
       label: '场景'
     },
     {
@@ -307,7 +379,7 @@ const notifications: React.FC = () => {
 
   const hydTabListNoTitle = [
     {
-      key: 'hydOverall',
+      key: 'mydOverall',
       label: '整体'
     },
     {
@@ -331,114 +403,221 @@ const notifications: React.FC = () => {
   /**
    * 满意度相关详情处理
    */
+    // 表头
   const mydDetailTableHead = [
-    {
-      title: '场景',
-      dataIndex: "mydDetailSense",
-      align: "center",
-    },
-    {
-      title: '发送量',
-      children: [
-        {
-          title: '本期',
-          dataIndex: "mydDetailSendB",
-          align: "center",
-        },
-        {
-          title: '上期',
-          dataIndex: "mydDetailSendS",
-          align: "center",
-        },
-      ]
-    },
-    {
-      title: '参评量',
-      children: [
-        {
-          title: '本期',
-          dataIndex: "mydDetailSendB",
-          align: "center",
-        },
-        {
-          title: '上期',
-          dataIndex: "mydDetailSendS",
-          align: "center",
-        },
-      ]
-    },
-    {
-      title: '满意量',
-      children: [
-        {
-          title: '本期',
-          dataIndex: "mydDetailSendB",
-          align: "center",
-        },
-        {
-          title: '上期',
-          dataIndex: "mydDetailSendS",
-          align: "center",
-        },
-      ]
-    },
-    {
-      title: '一般量',
-      children: [
-        {
-          title: '本期',
-          dataIndex: "mydDetailSendB",
-          align: "center",
-        },
-        {
-          title: '上期',
-          dataIndex: "mydDetailSendS",
-          align: "center",
-        },
-      ]
-    },
-    {
-      title: '不满意量',
-      children: [
-        {
-          title: '本期',
-          dataIndex: "mydDetailDisRateB",
-          align: "center",
-        },
-        {
-          title: '上期',
-          dataIndex: "mydDetailDisRateS",
-          align: "center",
-        },
-      ]
-    },
-    {
-      title: '满意率',
-      children: [
-        {
-          title: '本期',
-          dataIndex: "mydDetailSatRateB",
-          align: "center",
-        },
-        {
-          title: '上期',
-          dataIndex: "mydDetailSatRateS",
-          align: "center",
-        },
-      ]
-    },
-    {
-      title: "影响整体满意度",
-      dataIndex: "mydDetailEffect",
-      align: "center",
-    }
-  ];
+      {
+        title: '场景',
+        dataIndex: "mydDetailSense",
+        align: "center",
+      },
+      {
+        title: '发送量',
+        children: [
+          {
+            title: '本期',
+            dataIndex: "mydDetailSendB",
+            align: "center",
+          },
+          {
+            title: '上期',
+            dataIndex: "mydDetailSendS",
+            align: "center",
+          },
+        ]
+      },
+      {
+        title: '参评量',
+        children: [
+          {
+            title: '本期',
+            dataIndex: "mydDetailParB",
+            align: "center",
+          },
+          {
+            title: '上期',
+            dataIndex: "mydDetailParS",
+            align: "center",
+          },
+        ]
+      },
+      {
+        title: '满意量',
+        children: [
+          {
+            title: '本期',
+            dataIndex: "mydDetailSatQuanB",
+            align: "center",
+          },
+          {
+            title: '上期',
+            dataIndex: "mydDetailSatQuanS",
+            align: "center",
+          },
+        ]
+      },
+      {
+        title: '一般量',
+        children: [
+          {
+            title: '本期',
+            dataIndex: "mydDetailGenQuanB",
+            align: "center",
+          },
+          {
+            title: '上期',
+            dataIndex: "mydDetailGenQuanS",
+            align: "center",
+          },
+        ]
+      },
+      {
+        title: '不满意量',
+        children: [
+          {
+            title: '本期',
+            dataIndex: "mydDetailDisQuanB",
+            align: "center",
+          },
+          {
+            title: '上期',
+            dataIndex: "mydDetailDisQuanS",
+            align: "center",
+          },
+        ]
+      },
+      {
+        title: '满意率',
+        children: [
+          {
+            title: '本期',
+            dataIndex: "mydDetailSatRateB",
+            align: "center",
+          },
+          {
+            title: '上期',
+            dataIndex: "mydDetailSatRateS",
+            align: "center",
+          },
+        ]
+      },
+      {
+        title: "影响整体满意度",
+        dataIndex: "mydDetailEffect",
+        align: "center",
+      }
+    ];
 
+  // 模拟数据
+  // 整体
+  const mydOverallData = [{mydDetailSense: "整体"}];
+  // 短信
+  const mydMessageData = [{mydDetailSendB: "短信"}];
+  // 微信
+  const mydChatData = [{mydDetailSendB: "微信"}];
+
+  // 动态 Tab 切换 Table 数据
+  const [selectedTabKey, mydSetSelectedTabKey] = useState('mydOverall');
+  let mydTableData;
+  switch (selectedTabKey) {
+    case 'mydOverall':
+      mydTableData = mydOverallData;
+      break;
+    case 'mydSms':
+      mydTableData = mydMessageData;
+      break;
+    case 'mydWechat':
+      mydTableData = mydChatData;
+      break;
+    default:
+      mydTableData = [];
+  }
 
   /**
    * 呼入相关详情处理
    */
+    // 表头
+  const hrDetailTableHead = [
+      {
+        title: '场景',
+        dataIndex: "hrDetailSense",
+        align: "center",
+      },
+      {
+        title: '命中量',
+        children: [
+          {
+            title: '本期',
+            dataIndex: "hrTheAmountOfHitsB",
+            align: "center",
+          },
+          {
+            title: '上期',
+            dataIndex: "hrTheAmountOfHitsS",
+            align: "center",
+          },
+        ]
+      },
+      {
+        title: '进人工量',
+        children: [
+          {
+            title: '本期',
+            dataIndex: "hrLaborIntakeB",
+            align: "center",
+          },
+          {
+            title: '上期',
+            dataIndex: "hrLaborIntakeS",
+            align: "center",
+          },
+        ]
+      },
+      {
+        title: '进人工占比',
+        children: [
+          {
+            title: '本期',
+            dataIndex: "hrProOfLaborInputB",
+            align: "center",
+          },
+          {
+            title: '上期',
+            dataIndex: "hrProOfLaborInputS",
+            align: "center",
+          },
+        ]
+      },
+      {
+        title: "影响整体转人工值",
+        dataIndex: "hrValueIsHuman",
+        align: "center",
+      }
+    ];
 
+  // 模拟数据
+  // 整体
+  const hrdOverallData = [{hrTheAmountOfHitsB: "整体", hrDetailSense: "123"},];
+  // 短信
+  const hrdMessageData = [{hrTheAmountOfHitsB: "短信"}];
+  // 微信
+  const hrdChatData = [{hrTheAmountOfHitsB: "微信"}];
+
+  // 动态 Tab 切换 Table 数据
+  const [hrselectedTabKey, hrSetSelectedTabKey] = useState('rgSense');
+  let hrTableData;
+  switch (hrselectedTabKey) {
+    case 'rgSense':
+      hrTableData = hrdOverallData;
+      break;
+    case 'rgActive':
+      hrTableData = hrdMessageData;
+      break;
+    case 'rgRejection':
+      hrTableData = hrdChatData;
+      break;
+    default:
+      hrTableData = [];
+  }
 
   return (
     <PageContainer>
@@ -519,10 +698,21 @@ const notifications: React.FC = () => {
           tabProps={{
             size: 'middle',
           }}
+          activeTabKey={hrselectedTabKey}
+          onTabChange={key => hrSetSelectedTabKey(key)}
           tabBarExtraContent={
-            <Button type="primary" shape="round" icon={<DownloadOutlined/>}/>
+            <Space>
+              <Button
+                type="primary"
+                shape="round"
+                icon={<DownloadOutlined/>}
+                onClick={exportToExcelCallVolume}
+              />
+              <Button type="primary" shape="round" icon={<FileSearchOutlined/>}>详情</Button>
+            </Space>
           }
         >
+          <Table columns={hrDetailTableHead} dataSource={hrTableData}/>
         </Card>
       )}
       {currentCard === 'satisfaction' && (
@@ -530,14 +720,24 @@ const notifications: React.FC = () => {
           title={"满意度详情"}
           style={{width: '100%'}}
           tabList={hydTabListNoTitle}
+          activeTabKey={selectedTabKey}
+          onTabChange={key => mydSetSelectedTabKey(key)}
           tabProps={{
             size: 'middle',
           }}
           tabBarExtraContent={
-            <Button type="primary" shape="round" icon={<DownloadOutlined/>}/>
+            <Space>
+              <Button
+                type="primary"
+                shape="round"
+                icon={<DownloadOutlined/>}
+                onClick={exportToExcelSatisfaction}
+              />
+              <Button type="primary" shape="round" icon={<FileSearchOutlined/>}>详情</Button>
+            </Space>
           }
         >
-          <Table columns={mydDetailTableHead}/>
+          <Table columns={mydDetailTableHead} dataSource={mydTableData}/>
         </Card>
       )}
       {/*日报卡片*/}
