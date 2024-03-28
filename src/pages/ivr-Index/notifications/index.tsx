@@ -222,14 +222,13 @@ const notifications: React.FC = () => {
    */
     // 合并呼叫量数据和满意度数据导出函数
   const exportToExcelMain = () => {
-      // 创建一个新的工作簿
       const wb = XLSX.utils.book_new();
 
       // 处理第一个数据表（呼叫量数据）
       const ws1 = XLSX.utils.json_to_sheet(processedData.map(item => {
         return {
-          "专区": item.hrSpecialArea, // 示例：假设你想将'hrSpecialArea'作为'专区'
-          "触点": item.hrContactPoint, // 类似的，映射每个字段
+          "专区": item.hrSpecialArea,
+          "触点": item.hrContactPoint, // 映射每个字段
           "日期": item.hrDate,
           "环比": item.hrChains,
           "备注": item.hrRemarks || "", // 使用 || "" 处理undefined或null
@@ -249,12 +248,10 @@ const notifications: React.FC = () => {
       }), {header: ["渠道", "触点", formatDateRange(dates), "环比", "备注"], skipHeader: false});
       XLSX.utils.book_append_sheet(wb, ws2, "满意度数据");
 
-      // 使用moment获取当前时间，并格式化为YYYYMMDDHHmmss
+      // 使用moment获取当前时间，并格式化为YYYYMMDD
       const currentDateTime = moment().format('YYYYMMDD');
-      // 构造文件名，格式为 dayNewXXX.xlsx，XXX是当前时间
       const fileName = `DayNew${formatDateRange(dates)}.xlsx`;
 
-      // 导出Excel文件
       XLSX.writeFile(wb, fileName);
     };
 
@@ -382,7 +379,7 @@ const notifications: React.FC = () => {
         ]
       },
       {
-        title: '参评量',
+        title: '参评率',
         children: [
           {
             title: '本期',
@@ -397,49 +394,24 @@ const notifications: React.FC = () => {
         ]
       },
       {
+        title: '十分满意量',
+        dataIndex: "mydDetailVerySatQuan",
+        align: "center",
+      },
+      {
         title: '满意量',
-        children: [
-          {
-            title: '本期',
-            dataIndex: "mydDetailSatQuanB",
-            align: "center",
-          },
-          {
-            title: '上期',
-            dataIndex: "mydDetailSatQuanS",
-            align: "center",
-          },
-        ]
+        dataIndex: "mydDetailSatQuan",
+        align: "center",
       },
       {
         title: '一般量',
-        children: [
-          {
-            title: '本期',
-            dataIndex: "mydDetailGenQuanB",
-            align: "center",
-          },
-          {
-            title: '上期',
-            dataIndex: "mydDetailGenQuanS",
-            align: "center",
-          },
-        ]
+        dataIndex: "mydDetailGenQuan",
+        align: "center",
       },
       {
-        title: '不满意量',
-        children: [
-          {
-            title: '本期',
-            dataIndex: "mydDetailDisQuanB",
-            align: "center",
-          },
-          {
-            title: '上期',
-            dataIndex: "mydDetailDisQuanS",
-            align: "center",
-          },
-        ]
+        title: '本期',
+        dataIndex: "mydDetailDisQuan",
+        align: "center",
       },
       {
         title: '满意率',
