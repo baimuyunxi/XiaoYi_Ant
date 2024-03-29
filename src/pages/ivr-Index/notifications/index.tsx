@@ -1,6 +1,6 @@
 import {DownloadOutlined, FileSearchOutlined, PlusOutlined, RollbackOutlined, SearchOutlined} from '@ant-design/icons';
 import React, {useEffect, useLayoutEffect, useRef, useState} from 'react';
-import {Card, Col, DatePicker, Row, Space, Button, Table, Divider, ConfigProviderProps, Flex} from "antd";
+import {Card, Col, DatePicker, Row, Space, Button, Table, Divider, ConfigProviderProps, Flex, message} from "antd";
 import {PageContainer} from "@ant-design/pro-components";
 import moment from "moment";
 import useStyles from './style.style'
@@ -69,6 +69,9 @@ const notifications: React.FC = () => {
   // 自定义样式引用
   const {styles} = useStyles();
 
+  const [processedDataCombined, setProcessedDataCombined] = useState([]);
+  const [mydChatData, setMydChatData] = useState([]);
+
   // 禁用今天之后的日期
   const disabledDate = (current: moment.Moment) => {
     return current && current.isAfter(moment().endOf('day'));
@@ -101,7 +104,60 @@ const notifications: React.FC = () => {
 
   // 模拟数据信息
   const mockHrData = [{}];
-  const mockMydData = [{}];
+
+  /**
+   * API 调用处理
+   */
+
+    // 点击查询按钮时触发的函数
+  const {loading: searchDataLoading, run: runSearch} = useRequest(
+      async () => {
+        try {
+          // 从状态中获取时间范围
+          const day_ids = dates[0].format("YYYY-MM-DD HH:mm:ss");
+          const day_ide = dates[1].format("YYYY-MM-DD HH:mm:ss");
+          const last_day_ids = comparisonDates[0].format("YYYY-MM-DD HH:mm:ss");
+          const last_day_ide = comparisonDates[1].format("YYYY-MM-DD HH:mm:ss");
+
+          // 调用API
+          // const callVolumeResponse = await queryCallVolume({day_ids, day_ide, last_day_ids, last_day_ide});
+          const satisfactionResponse = await querySatisfaction({day_ids, day_ide, last_day_ids, last_day_ide});
+
+          // 响应体打印
+          // console.log("Call Volume Response:", callVolumeResponse);
+          console.log("Satisfaction Response:", satisfactionResponse);
+
+          // 处理API响应
+          if (satisfactionResponse.code === '200') {
+            const newData = createNewArr(satisfactionResponse.data, ["mydChannel", "mydContactPoint", "mydRemarks"]);
+            setProcessedDataCombined(newData);
+          } else {
+            console.error('获取数据失败:', satisfactionResponse.message);
+            message.error('获取满意度数据失败');
+          }
+        } catch (e) {
+          console.error("Error fetching data:", e)
+        }
+      },
+      {
+        manual: true, // 手动触发请求
+      }
+    );
+
+  const [dataLoaded, setDataLoaded] = useState(false);
+
+  // 使用useEffect在组件加载时调用函数
+  useEffect(() => {
+    // 延迟
+    setTimeout(() => {
+      setDataLoaded(true);
+    }, 1000);
+
+    // 当数据加载完成后调用 runSearch
+    if (dataLoaded) {
+      runSearch();
+    }
+  }, [dataLoaded]);
 
   // 呼叫量数据表头
   const processedData = createNewArr(mockHrData, ["hrSpecialArea"]);
@@ -166,7 +222,7 @@ const notifications: React.FC = () => {
   ]
 
   // 满意度数据表头
-  const processedDataCombined = createNewArr(mockMydData, ["mydChannel", "mydContactPoint", "mydDate", "mydChains"]);
+  // const processedDataCombined = createNewArr(mockMydData, ["mydChannel", "mydContactPoint", "mydDate", "mydChains"]);
   // console.log(processedDataCombined)
   const mydDataColumns = [
     {
@@ -197,23 +253,40 @@ const notifications: React.FC = () => {
       dataIndex: "mydDate",
       align: "center",
       width: 130,
-      onCell: (record) => ({
-        rowSpan: record.mydDateRowSpan,
-      }),
     },
     {
       title: "环比",
       dataIndex: "mydChains",
       align: "center",
       width: 120,
-      onCell: (record) => ({
-        rowSpan: record.mydChainsRowSpan,
-      }),
+      render: (text, record, index) => {
+        const rowIndex = index + 1;
+        const value = parseFloat(text); // 将文本转换为浮点数
+        const absValue = Math.abs(value);
+        let displayText = text; // 默认显示文本
+        // 根据数值的正负和绝对值大小改变颜色
+        let style = {};
+        // 仅对行号是3的倍数的行进行颜色处理
+        if (rowIndex % 2 === 0) {
+          if (value < 0 && absValue > 1) {
+            // 负数且绝对值大于1，以红色显示
+            style = {color: 'red', fontWeight: 'bold'};
+          } else if (value > 0 && absValue > 1) {
+            // 正数且绝对值大于1，以绿色显示
+            style = {color: 'green', fontWeight: 'bold'};
+          }
+        }
+
+        return <span style={style}>{displayText}</span>;
+      }
     },
     {
       title: "备注",
       dataIndex: "mydRemarks",
-      align: "center"
+      align: "center",
+      onCell: (record) => ({
+        rowSpan: record.mydRemarksRowSpan,
+      }),
     },
   ];
 
@@ -245,11 +318,11 @@ const notifications: React.FC = () => {
           "环比": item.mydChains,
           "备注": item.mydRemarks || "",
         }
-      }), {header: ["渠道", "触点", formatDateRange(dates), "环比", "备注"], skipHeader: false});
+      }), {header: ["渠道", "触点", "日期", "环比", "备注"], skipHeader: false});
       XLSX.utils.book_append_sheet(wb, ws2, "满意度数据");
 
       // 使用moment获取当前时间，并格式化为YYYYMMDD
-      const currentDateTime = moment().format('YYYYMMDD');
+      // const currentDateTime = moment().format('YYYYMMDD');
       const fileName = `DayNew${formatDateRange(dates)}.xlsx`;
 
       XLSX.writeFile(wb, fileName);
@@ -409,7 +482,7 @@ const notifications: React.FC = () => {
         align: "center",
       },
       {
-        title: '本期',
+        title: '不满意量',
         dataIndex: "mydDetailDisQuan",
         align: "center",
       },
@@ -441,7 +514,7 @@ const notifications: React.FC = () => {
   // 短信
   const mydMessageData = [{mydDetailSendB: "短信"}];
   // 微信
-  const mydChatData = [{mydDetailSendB: "微信"}];
+  // const mydChatData = [{mydDetailSendB: "微信"}];
 
   // 动态 Tab 切换 Table 数据
   const [selectedTabKey, mydSetSelectedTabKey] = useState('mydOverall');
@@ -545,57 +618,9 @@ const notifications: React.FC = () => {
       break;
     default:
       hrTableData = [];
-  }
-  ;
+  };
 
-  /**
-   * API 调用处理
-   */
-
-    // 点击查询按钮时触发的函数
-  const {loading: searchDataLoading, run: runSearch} = useRequest(
-      async () => {
-        try {
-          // 从状态中获取时间范围
-          const day_ids = dates[0].format("YYYY-MM-DD HH:mm:ss");
-          const day_ide = dates[1].format("YYYY-MM-DD HH:mm:ss");
-          const last_day_ids = comparisonDates[0].format("YYYY-MM-DD HH:mm:ss");
-          const last_day_ide = comparisonDates[1].format("YYYY-MM-DD HH:mm:ss");
-
-          // 调用API
-          const callVolumeResponse = await queryCallVolume({day_ids, day_ide, last_day_ids, last_day_ide});
-          const satisfactionResponse = await querySatisfaction({day_ids, day_ide, last_day_ids, last_day_ide});
-
-          // 响应体打印
-          console.log("Call Volume Response:", callVolumeResponse);
-          console.log("Satisfaction Response:", satisfactionResponse);
-
-          // 处理API响应
-          // ...
-        } catch (e) {
-          console.error("Error fetching data:", e)
-        }
-      },
-      {
-        manual: true, // 手动触发请求
-      }
-    );
-
-  const [dataLoaded, setDataLoaded] = useState(false);
-
-  // 使用useEffect在组件加载时调用函数
-  useEffect(() => {
-    // 延迟
-    setTimeout(() => {
-      setDataLoaded(true);
-    }, 1000);
-
-    // 当数据加载完成后调用 runSearch
-    if (dataLoaded) {
-      runSearch();
-    }
-  }, [dataLoaded]);
-
+  // 详情展示处理
   useEffect(() => {
     const fetchData = async () => {
       // 准备 API 调用的参数
@@ -636,8 +661,15 @@ const notifications: React.FC = () => {
           case 'mydWechat':
             const chatResponse = await querySatChat(params);
             // TODO: 处理响应数据
+            // 处理API响应
+            if (chatResponse.code === '200') {
+              // const newData = createNewArr(chatResponse.data, ["mydChannel", "mydContactPoint", "mydRemarks"]);
+              setMydChatData(chatResponse.data);
+            } else {
+              console.error('获取数据失败:', chatResponse.message);
+              message.error('获取满意度数据失败');
+            }
             break;
-          // 其他 case...
         }
       }
     };
@@ -646,6 +678,7 @@ const notifications: React.FC = () => {
   }, [currentCard, hrselectedTabKey, selectedTabKey, dates, comparisonDates]);
 
 
+  // 下载处理
   const handleDetailClick = async () => {
     const params = {
       day_ids: dates[0].format("YYYY-MM-DD HH:mm:ss"),
