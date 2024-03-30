@@ -8,7 +8,7 @@ const Settings: ProLayoutProps & {
   logo?: string;
 } = {
   // 设置标题的 title
-  "title": '小翼智能分析系统',
+  "title": '小翼',
   "navTheme": "light",
   "colorPrimary": "#1890ff",
   "layout": "side",

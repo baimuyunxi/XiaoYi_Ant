@@ -64,12 +64,6 @@ export default [
         path: '/dashboard/monitor',
         component: './dashboard/monitor',
       },
-      // {
-      //   name: 'workplace',
-      //   icon: 'smile',
-      //   path: '/dashboard/workplace',
-      //   component: './dashboard/workplace',
-      // },
     ],
   },
   {
@@ -89,58 +83,58 @@ export default [
       },
     ]
   },
-  {
-    path: '/list',
-    icon: 'table',
-    name: 'list',
-    routes: [
-      {
-        path: '/list',
-        redirect: '/list/table-list',
-      },
-      {
-        name: 'table-list',
-        icon: 'smile',
-        path: '/list/table-list',
-        component: './table-list',
-      },
-      // {
-      //   name: 'basic-list',
-      //   icon: 'smile',
-      //   path: '/list/basic-list',
-      //   component: './list/basic-list',
-      // },
-      // {
-      //   name: 'card-list',
-      //   icon: 'smile',
-      //   path: '/list/card-list',
-      //   component: './list/card-list',
-      // },
-    ],
-  },
-  {
-    path: '/profile',
-    name: 'profile',
-    icon: 'profile',
-    routes: [
-      {
-        path: '/profile',
-        redirect: '/profile/basic',
-      },
-      {
-        name: 'basic',
-        icon: 'smile',
-        path: '/profile/basic',
-        component: './profile/basic',
-      },
-      {
-        name: 'advanced',
-        icon: 'smile',
-        path: '/profile/advanced',
-        component: './profile/advanced',
-      },
-    ],
-  },
+  // {
+  //   path: '/list',
+  //   icon: 'table',
+  //   name: 'list',
+  //   routes: [
+  //     {
+  //       path: '/list',
+  //       redirect: '/list/table-list',
+  //     },
+  //     {
+  //       name: 'table-list',
+  //       icon: 'smile',
+  //       path: '/list/table-list',
+  //       component: './table-list',
+  //     },
+  //     // {
+  //     //   name: 'basic-list',
+  //     //   icon: 'smile',
+  //     //   path: '/list/basic-list',
+  //     //   component: './list/basic-list',
+  //     // },
+  //     // {
+  //     //   name: 'card-list',
+  //     //   icon: 'smile',
+  //     //   path: '/list/card-list',
+  //     //   component: './list/card-list',
+  //     // },
+  //   ],
+  // },
+  // {
+  //   path: '/profile',
+  //   name: 'profile',
+  //   icon: 'profile',
+  //   routes: [
+  //     {
+  //       path: '/profile',
+  //       redirect: '/profile/basic',
+  //     },
+  //     {
+  //       name: 'basic',
+  //       icon: 'smile',
+  //       path: '/profile/basic',
+  //       component: './profile/basic',
+  //     },
+  //     {
+  //       name: 'advanced',
+  //       icon: 'smile',
+  //       path: '/profile/advanced',
+  //       component: './profile/advanced',
+  //     },
+  //   ],
+  // },
   // {
   //   name: 'result',
   //   icon: 'CheckCircleOutlined',
@@ -164,29 +158,29 @@ export default [
   //     },
   //   ],
   // },
-  {
-    name: 'account',
-    icon: 'user',
-    path: '/account',
-    routes: [
-      {
-        path: '/account',
-        redirect: '/account/center',
-      },
-      {
-        name: 'center',
-        icon: 'smile',
-        path: '/account/center',
-        component: './account/center',
-      },
-      {
-        name: 'settings',
-        icon: 'smile',
-        path: '/account/settings',
-        component: './account/settings',
-      },
-    ],
-  },
+  // {
+  //   name: 'account',
+  //   icon: 'user',
+  //   path: '/account',
+  //   routes: [
+  //     {
+  //       path: '/account',
+  //       redirect: '/account/center',
+  //     },
+  //     {
+  //       name: 'center',
+  //       icon: 'smile',
+  //       path: '/account/center',
+  //       component: './account/center',
+  //     },
+  //     {
+  //       name: 'settings',
+  //       icon: 'smile',
+  //       path: '/account/settings',
+  //       component: './account/settings',
+  //     },
+  //   ],
+  // },
   {
     path: '/',
     redirect: '/dashboard/analysis',
