@@ -121,7 +121,7 @@ export const layout: RunTimeLayoutConfig = ({ initialState }) => {
     //     </>
     //   );
     // },
-    // ...initialState?.settings,
+    ...initialState?.settings,
   };
 };
 
@@ -131,6 +131,6 @@ export const layout: RunTimeLayoutConfig = ({ initialState }) => {
  * @doc https://umijs.org/docs/max/request#配置
  */
 export const request: RequestConfig = {
-  baseURL: 'http://134.178.18.223:8080',
+  baseURL: 'http://localhost:8066',
   ...errorConfig,
 };

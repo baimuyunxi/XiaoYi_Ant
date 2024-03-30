@@ -88,23 +88,25 @@ export async function querySatisfaction(params) {
 
 
 // 整体满意度
-export async function querySatOverall(params: {
-  last_day_ids: string;
-  last_day_ide: string;
-  day_ide: string;
-  day_ids: string
-}) {return fetchAPI('/callSatOverall', {
-  method: 'POST',
-  data: {
-    ...params,
-  },
-});}
+export async function querySatOverall(params){
+  return fetchAPI('/callSatOverall',{
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json', // 确保设置了正确的Content-Type头
+    },
+    data: params, // 传递参数
+  });
+}
 
 // 短信满意度
-export async function querySatMes():Promise<{
-  data:{}
-}>{
-  return request('/api/ivrIndex/callSatMes')
+export async function querySatMes(params){
+  return fetchAPI('/callSatMes',{
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json', // 确保设置了正确的Content-Type头
+    },
+    data: params, // 传递参数
+  });
 }
 
 // 微信满意度

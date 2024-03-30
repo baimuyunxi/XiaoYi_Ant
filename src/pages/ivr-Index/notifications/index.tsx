@@ -69,8 +69,22 @@ const notifications: React.FC = () => {
   // 自定义样式引用
   const {styles} = useStyles();
 
-  const [processedDataCombined, setProcessedDataCombined] = useState([]);
-  const [mydChatData, setMydChatData] = useState([]);
+  // 主表
+  const [processedData, setProcessedData] = useState([]); // 呼叫量数据
+
+  const [processedDataCombined, setProcessedDataCombined] = useState([]); // 满意度数据
+  // 人工呼入详情
+  const [hrdOverallData, setHrdOverallData] = useState([]);  // 场景
+  const [hrdMessageData, setHrdMessageData] = useState([]);  // 主动
+  const [hrdChatData, setHrdChatData] = useState([]);  // 拒识
+  // 满意度详情
+  const [mydChatData, setMydChatData] = useState([]); // 微信
+  const [mydMessageData, setMydMessageData] = useState([]); // 短信
+  const [mydOverallData, setMydOverallData] = useState([]); // 整体
+
+  const [loadingChat, setLoadingChat] = useState(false); // 表格加载状态定义
+
+  const [cachedData, setCachedData] = useState({data: null, date: null}); // 数据缓存
 
   // 禁用今天之后的日期
   const disabledDate = (current: moment.Moment) => {
@@ -131,6 +145,8 @@ const notifications: React.FC = () => {
           if (satisfactionResponse.code === '200') {
             const newData = createNewArr(satisfactionResponse.data, ["mydChannel", "mydContactPoint", "mydRemarks"]);
             setProcessedDataCombined(newData);
+            // const processedData = createNewArr(mockHrData, ["hrSpecialArea", "hrRemarks"]);
+
           } else {
             console.error('获取数据失败:', satisfactionResponse.message);
             message.error('获取满意度数据失败');
@@ -160,7 +176,7 @@ const notifications: React.FC = () => {
   }, [dataLoaded]);
 
   // 呼叫量数据表头
-  const processedData = createNewArr(mockHrData, ["hrSpecialArea"]);
+  // const processedData = createNewArr(mockHrData, ["hrSpecialArea"]);
   const hrDataColumns = [
     {
       title: '类型',
@@ -294,67 +310,80 @@ const notifications: React.FC = () => {
    * 文件功能导出区
    */
     // 合并呼叫量数据和满意度数据导出函数
-  const exportToExcelMain = () => {
-      const wb = XLSX.utils.book_new();
+  const {loading: setExportToLoading, run: exportToExcelMain} = useRequest(
+      async () => {
+        const wb = XLSX.utils.book_new();
 
-      // 处理第一个数据表（呼叫量数据）
-      const ws1 = XLSX.utils.json_to_sheet(processedData.map(item => {
-        return {
-          "专区": item.hrSpecialArea,
-          "触点": item.hrContactPoint, // 映射每个字段
-          "日期": item.hrDate,
-          "环比": item.hrChains,
-          "备注": item.hrRemarks || "", // 使用 || "" 处理undefined或null
-        }
-      }), {header: ["专区", "触点", formatDateRange(dates), "环比", "备注"], skipHeader: false});
-      XLSX.utils.book_append_sheet(wb, ws1, "呼叫量数据");
+        // 处理第一个数据表（呼叫量数据）
+        const ws1 = XLSX.utils.json_to_sheet(processedData.map(item => {
+          return {
+            "专区": item.hrSpecialArea,
+            "触点": item.hrContactPoint, // 映射每个字段
+            "日期": item.hrDate,
+            "环比": item.hrChains,
+            "备注": item.hrRemarks || "", // 使用 || "" 处理undefined或null
+          }
+        }), {header: ["专区", "触点", formatDateRange(dates), "环比", "备注"], skipHeader: false});
+        XLSX.utils.book_append_sheet(wb, ws1, "呼叫量数据");
 
-      // 处理第二个数据表（满意度数据）
-      const ws2 = XLSX.utils.json_to_sheet(processedDataCombined.map(item => {
-        return {
-          "渠道": item.mydChannel,
-          "触点": item.mydContactPoint,
-          "日期": item.mydDate,
-          "环比": item.mydChains,
-          "备注": item.mydRemarks || "",
-        }
-      }), {header: ["渠道", "触点", "日期", "环比", "备注"], skipHeader: false});
-      XLSX.utils.book_append_sheet(wb, ws2, "满意度数据");
+        // 处理第二个数据表（满意度数据）
+        const ws2 = XLSX.utils.json_to_sheet(processedDataCombined.map(item => {
+          return {
+            "渠道": item.mydChannel,
+            "触点": item.mydContactPoint,
+            "日期": item.mydDate,
+            "环比": item.mydChains,
+            "备注": item.mydRemarks || "",
+          }
+        }), {header: ["渠道", "触点", "日期", "环比", "备注"], skipHeader: false});
+        XLSX.utils.book_append_sheet(wb, ws2, "满意度数据");
 
-      // 使用moment获取当前时间，并格式化为YYYYMMDD
-      // const currentDateTime = moment().format('YYYYMMDD');
-      const fileName = `DayNew${formatDateRange(dates)}.xlsx`;
+        // 使用moment获取当前时间，并格式化为YYYYMMDD
+        // const currentDateTime = moment().format('YYYYMMDD');
+        const fileName = `DayNew${formatDateRange(dates)}.xlsx`;
 
-      XLSX.writeFile(wb, fileName);
-    };
+        XLSX.writeFile(wb, fileName);
+
+      },
+      {
+        manual: true, // 表示手动触发异步操作
+      }
+    )
+
 
   // 满意度详情维度展示导出
-  const exportToExcelSatisfaction = () => {
-    const wb = XLSX.utils.book_new();
+  const {loading: setExportToExcelSat, run: exportToExcelSatisfaction} = useRequest(
+    async () => {
+      const wb = XLSX.utils.book_new();
 
-    // 将嵌套的表头转换为一维数组
-    const flatColumns = mydDetailTableHead.reduce((acc, item) => {
-      if (item.children) {
-        return [...acc, ...item.children.map(child => ({...child, title: `${item.title} ${child.title}`}))];
-      }
-      return [...acc, item];
-    }, []);
+      // 将嵌套的表头转换为一维数组
+      const flatColumns = mydDetailTableHead.reduce((acc, item) => {
+        if (item.children) {
+          return [...acc, ...item.children.map(child => ({...child, title: `${item.title} ${child.title}`}))];
+        }
+        return [...acc, item];
+      }, []);
 
-    const ws = XLSX.utils.json_to_sheet(mydTableData.map(item => {
-      const row = {};
-      flatColumns.forEach(col => {
-        row[col.title] = item[col.dataIndex];
-      });
-      return row;
-    }), {header: flatColumns.map(col => col.title), skipHeader: false});
+      const ws = XLSX.utils.json_to_sheet(mydTableData.map(item => {
+        const row = {};
+        flatColumns.forEach(col => {
+          row[col.title] = item[col.dataIndex];
+        });
+        return row;
+      }), {header: flatColumns.map(col => col.title), skipHeader: false});
 
-    XLSX.utils.book_append_sheet(wb, ws, "满意度数据");
+      XLSX.utils.book_append_sheet(wb, ws, "满意度数据");
 
-    const currentDateTime = moment().format('YYYYMMDD');
-    const fileName = `detail${currentDateTime}.xlsx`;
+      const currentDateTime = moment().format('YYYYMMDD');
+      const fileName = `detail${currentDateTime}.xlsx`;
 
-    XLSX.writeFile(wb, fileName);
-  };
+      XLSX.writeFile(wb, fileName);
+    },
+    {
+      manual: true, // 表示手动触发异步操作
+    }
+  )
+
 
   // 呼入详情维度展示导出
   const exportToExcelCallVolume = () => {
@@ -505,16 +534,24 @@ const notifications: React.FC = () => {
         title: "影响整体满意度",
         dataIndex: "mydDetailEffect",
         align: "center",
+        sorter: (a, b) => {
+          // 移除字符串中的百分号，并将其转换为浮点数
+          const aValue = parseFloat(a.mydDetailEffect.replace('%', ''));
+          const bValue = parseFloat(b.mydDetailEffect.replace('%', ''));
+
+          // 比较转换后的数值
+          return aValue - bValue;
+        },
       }
     ];
 
   // 模拟数据
   // 整体
-  const mydOverallData = [{mydDetailSense: "整体"}];
-  // 短信
-  const mydMessageData = [{mydDetailSendB: "短信"}];
+  // const mydOverallData = [];
+  // // 短信
+  // const mydMessageData = [];
   // 微信
-  // const mydChatData = [{mydDetailSendB: "微信"}];
+  // const mydChatData = [];
 
   // 动态 Tab 切换 Table 数据
   const [selectedTabKey, mydSetSelectedTabKey] = useState('mydOverall');
@@ -596,12 +633,12 @@ const notifications: React.FC = () => {
     ];
 
   // 模拟数据
-  // 整体
-  const hrdOverallData = [{hrTheAmountOfHitsB: "整体", hrDetailSense: "123"},];
-  // 短信
-  const hrdMessageData = [{hrTheAmountOfHitsB: "短信"}];
-  // 微信
-  const hrdChatData = [{hrTheAmountOfHitsB: "微信"}];
+  // 场景
+  // const hrdOverallData = [{hrTheAmountOfHitsB: "整体", hrDetailSense: "123"},];
+  // // 主动
+  // const hrdMessageData = [{hrTheAmountOfHitsB: "短信"}];
+  // // 拒识
+  // const hrdChatData = [{hrTheAmountOfHitsB: "微信"}];
 
   // 动态 Tab 切换 Table 数据
   const [hrselectedTabKey, hrSetSelectedTabKey] = useState('rgSense');
@@ -618,11 +655,14 @@ const notifications: React.FC = () => {
       break;
     default:
       hrTableData = [];
-  };
+  }
+  ;
 
   // 详情展示处理
   useEffect(() => {
     const fetchData = async () => {
+      setLoadingChat(true);
+
       // 准备 API 调用的参数
       const params = {
         day_ids: dates[0].format("YYYY-MM-DD HH:mm:ss"),
@@ -653,10 +693,24 @@ const notifications: React.FC = () => {
           case 'mydOverall':
             const overallResponse = await querySatOverall(params);
             // TODO: 处理响应数据
+            if (overallResponse.code === '200') {
+              // const newData = createNewArr(chatResponse.data, ["mydChannel", "mydContactPoint", "mydRemarks"]);
+              setMydOverallData(overallResponse.data);
+            } else {
+              console.error('获取数据失败:', overallResponse.message);
+              message.error('获取满意度数据失败');
+            }
             break;
           case 'mydSms':
             const mesResponse = await querySatMes(params);
             // TODO: 处理响应数据
+            if (mesResponse.code === '200') {
+              // const newData = createNewArr(chatResponse.data, ["mydChannel", "mydContactPoint", "mydRemarks"]);
+              setMydMessageData(mesResponse.data);
+            } else {
+              console.error('获取数据失败:', mesResponse.message);
+              message.error('获取满意度数据失败');
+            }
             break;
           case 'mydWechat':
             const chatResponse = await querySatChat(params);
@@ -672,6 +726,7 @@ const notifications: React.FC = () => {
             break;
         }
       }
+      setLoadingChat(false);
     };
 
     fetchData();
@@ -827,6 +882,7 @@ const notifications: React.FC = () => {
                 shape="round"
                 icon={<DownloadOutlined/>}
                 onClick={exportToExcelSatisfaction}
+                loading={setExportToExcelSat}
               />
               <Button
                 type="primary"
@@ -839,7 +895,7 @@ const notifications: React.FC = () => {
             </Space>
           }
         >
-          <Table columns={mydDetailTableHead} dataSource={mydTableData}/>
+          <Table columns={mydDetailTableHead} dataSource={mydTableData} loading={loadingChat}/>
         </Card>
       )}
       {/*日报卡片*/}
@@ -852,16 +908,15 @@ const notifications: React.FC = () => {
             </Col>
             <Col>
               <Button type="primary" shape="round" icon={<DownloadOutlined/>}
-                      onClick={exportToExcelMain}/>
+                      onClick={exportToExcelMain} loading={setExportToLoading}/>
             </Col>
           </Row>
           <Divider/>
           <Table columns={hrDataColumns} dataSource={processedData} bordered={true} pagination={false}
-                 size={"small"} title={() => <h3>呼叫量数据</h3>}
-          />
+                 size={"small"} title={() => <h3>呼叫量数据</h3>} loading={searchDataLoading}/>
           <Divider/>
           <Table columns={mydDataColumns} dataSource={processedDataCombined} bordered={true} pagination={false}
-                 size={"small"} title={() => <h3>满意度数据</h3>}/>
+                 size={"small"} title={() => <h3>满意度数据</h3>} loading={searchDataLoading}/>
         </Card>
       )}
     </PageContainer>
