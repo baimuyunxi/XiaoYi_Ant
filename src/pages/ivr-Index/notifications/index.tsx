@@ -545,14 +545,6 @@ const notifications: React.FC = () => {
       }
     ];
 
-  // 模拟数据
-  // 整体
-  // const mydOverallData = [];
-  // // 短信
-  // const mydMessageData = [];
-  // 微信
-  // const mydChatData = [];
-
   // 动态 Tab 切换 Table 数据
   const [selectedTabKey, mydSetSelectedTabKey] = useState('mydOverall');
   let mydTableData;
@@ -632,14 +624,6 @@ const notifications: React.FC = () => {
       }
     ];
 
-  // 模拟数据
-  // 场景
-  // const hrdOverallData = [{hrTheAmountOfHitsB: "整体", hrDetailSense: "123"},];
-  // // 主动
-  // const hrdMessageData = [{hrTheAmountOfHitsB: "短信"}];
-  // // 拒识
-  // const hrdChatData = [{hrTheAmountOfHitsB: "微信"}];
-
   // 动态 Tab 切换 Table 数据
   const [hrselectedTabKey, hrSetSelectedTabKey] = useState('rgSense');
   let hrTableData;
@@ -686,7 +670,6 @@ const notifications: React.FC = () => {
             const rejectionResponse = await queryCallRejection(params);
             // TODO: 处理响应数据
             break;
-          // 其他 case...
         }
       } else if (currentCard === 'satisfaction') {
         switch (selectedTabKey) {
@@ -694,7 +677,6 @@ const notifications: React.FC = () => {
             const overallResponse = await querySatOverall(params);
             // TODO: 处理响应数据
             if (overallResponse.code === '200') {
-              // const newData = createNewArr(chatResponse.data, ["mydChannel", "mydContactPoint", "mydRemarks"]);
               setMydOverallData(overallResponse.data);
             } else {
               console.error('获取数据失败:', overallResponse.message);
@@ -705,7 +687,6 @@ const notifications: React.FC = () => {
             const mesResponse = await querySatMes(params);
             // TODO: 处理响应数据
             if (mesResponse.code === '200') {
-              // const newData = createNewArr(chatResponse.data, ["mydChannel", "mydContactPoint", "mydRemarks"]);
               setMydMessageData(mesResponse.data);
             } else {
               console.error('获取数据失败:', mesResponse.message);
@@ -717,7 +698,6 @@ const notifications: React.FC = () => {
             // TODO: 处理响应数据
             // 处理API响应
             if (chatResponse.code === '200') {
-              // const newData = createNewArr(chatResponse.data, ["mydChannel", "mydContactPoint", "mydRemarks"]);
               setMydChatData(chatResponse.data);
             } else {
               console.error('获取数据失败:', chatResponse.message);
