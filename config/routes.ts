@@ -185,8 +185,8 @@ export default [
     path: '/',
     redirect: '/dashboard/analysis',
   },
-  // {
-  //   component: '404',
-  //   path: '*',
-  // },
+  {
+    component: '404',
+    path: '/*',
+  },
 ];

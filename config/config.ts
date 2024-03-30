@@ -8,6 +8,9 @@ import routes from './routes';
 
 const { REACT_APP_ENV = 'dev' } = process.env;
 
+
+
+
 export default defineConfig({
   /**
    * @name 开启 hash 模式
@@ -162,4 +165,5 @@ export default defineConfig({
   },
   esbuildMinifyIIFE: true,
   requestRecord: {},
+  history: { type: 'hash' },
 });
