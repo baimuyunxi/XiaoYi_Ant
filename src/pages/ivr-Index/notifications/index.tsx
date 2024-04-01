@@ -1,6 +1,20 @@
 import {DownloadOutlined, FileSearchOutlined, PlusOutlined, RollbackOutlined, SearchOutlined} from '@ant-design/icons';
 import React, {useEffect, useLayoutEffect, useRef, useState} from 'react';
-import {Card, Col, DatePicker, Row, Space, Button, Table, Divider, ConfigProviderProps, Flex, message} from "antd";
+import Highlighter from 'react-highlight-words';
+import {
+  Card,
+  Col,
+  DatePicker,
+  Row,
+  Space,
+  Button,
+  Table,
+  Divider,
+  ConfigProviderProps,
+  Flex,
+  message,
+  Input
+} from "antd";
 import {PageContainer} from "@ant-design/pro-components";
 import moment from "moment";
 import useStyles from './style.style'
@@ -84,7 +98,20 @@ const notifications: React.FC = () => {
 
   const [loadingChat, setLoadingChat] = useState(false); // 表格加载状态定义
 
-  const [cachedData, setCachedData] = useState({data: null, date: null}); // 数据缓存
+  const [searchText, setSearchText] = useState('');
+  const [searchedColumn, setSearchedColumn] = useState('');
+  const searchInput = useRef(null);
+
+  const handleSearch = (selectedKeys, confirm, dataIndex) => {
+    confirm();
+    setSearchText(selectedKeys[0]);
+    setSearchedColumn(dataIndex);
+  };
+
+  const handleReset = clearFilters => {
+    clearFilters();
+    setSearchText('');
+  };
 
   // 禁用今天之后的日期
   const disabledDate = (current: moment.Moment) => {
@@ -455,6 +482,53 @@ const notifications: React.FC = () => {
     setCurrentCard(cardName);
   };
 
+  const getColumnSearchProps = dataIndex => ({
+    filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => (
+      <div style={{ padding: 8 }}>
+        <Input
+          ref={searchInput}
+          placeholder={`Search `}
+          value={selectedKeys[0]}
+          onChange={e => setSelectedKeys(e.target.value ? [e.target.value] : [])}
+          onPressEnter={() => handleSearch(selectedKeys, confirm, dataIndex)}
+          style={{ marginBottom: 8, display: 'block' }}
+        />
+        <Button
+          type="primary"
+          onClick={() => handleSearch(selectedKeys, confirm, dataIndex)}
+          icon={<SearchOutlined />}
+          size="small"
+          style={{ width: 90, marginRight: 8 }}
+        >
+          Search
+        </Button>
+        <Button
+          onClick={() => handleReset(clearFilters)}
+          size="small"
+          style={{ width: 90 }}
+        >
+          Reset
+        </Button>
+      </div>
+    ),
+    filterIcon: filtered => (
+      <SearchOutlined style={{ color: filtered ? '#1890ff' : undefined }} />
+    ),
+    onFilter: (value, record) =>
+      record[dataIndex] ? record[dataIndex].toString().toLowerCase().includes(value.toLowerCase()) : false,
+    render: text => searchedColumn === dataIndex && text ? (
+      <Highlighter
+        highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
+        searchWords={[searchText]}
+        autoEscape
+        textToHighlight={text.toString()}
+      />
+    ) : (
+      text
+    ),
+  });
+
+
   /**
    * 满意度相关详情处理
    */
@@ -464,6 +538,7 @@ const notifications: React.FC = () => {
         title: '场景',
         dataIndex: "mydDetailSense",
         align: "center",
+        ...getColumnSearchProps('mydDetailSense'),
       },
       {
         title: '发送量',
@@ -571,6 +646,7 @@ const notifications: React.FC = () => {
         title: '场景',
         dataIndex: "hrDetailSense",
         align: "center",
+        ...getColumnSearchProps('hrDetailSense'),
       },
       {
         title: '命中量',
@@ -639,8 +715,7 @@ const notifications: React.FC = () => {
       break;
     default:
       hrTableData = [];
-  }
-  ;
+  };
 
   // 详情展示处理
   useEffect(() => {
