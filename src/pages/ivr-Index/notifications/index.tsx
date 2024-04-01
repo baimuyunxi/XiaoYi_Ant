@@ -483,42 +483,42 @@ const notifications: React.FC = () => {
   };
 
   const getColumnSearchProps = dataIndex => ({
-    filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => (
-      <div style={{ padding: 8 }}>
+    filterDropdown: ({setSelectedKeys, selectedKeys, confirm, clearFilters}) => (
+      <div style={{padding: 8}}>
         <Input
           ref={searchInput}
           placeholder={`Search `}
           value={selectedKeys[0]}
           onChange={e => setSelectedKeys(e.target.value ? [e.target.value] : [])}
           onPressEnter={() => handleSearch(selectedKeys, confirm, dataIndex)}
-          style={{ marginBottom: 8, display: 'block' }}
+          style={{marginBottom: 8, display: 'block'}}
         />
         <Button
           type="primary"
           onClick={() => handleSearch(selectedKeys, confirm, dataIndex)}
-          icon={<SearchOutlined />}
+          icon={<SearchOutlined/>}
           size="small"
-          style={{ width: 90, marginRight: 8 }}
+          style={{width: 90, marginRight: 8}}
         >
           Search
         </Button>
         <Button
           onClick={() => handleReset(clearFilters)}
           size="small"
-          style={{ width: 90 }}
+          style={{width: 90}}
         >
           Reset
         </Button>
       </div>
     ),
     filterIcon: filtered => (
-      <SearchOutlined style={{ color: filtered ? '#1890ff' : undefined }} />
+      <SearchOutlined style={{color: filtered ? '#1890ff' : undefined}}/>
     ),
     onFilter: (value, record) =>
       record[dataIndex] ? record[dataIndex].toString().toLowerCase().includes(value.toLowerCase()) : false,
     render: text => searchedColumn === dataIndex && text ? (
       <Highlighter
-        highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
+        highlightStyle={{backgroundColor: '#ffc069', padding: 0}}
         searchWords={[searchText]}
         autoEscape
         textToHighlight={text.toString()}
@@ -715,7 +715,8 @@ const notifications: React.FC = () => {
       break;
     default:
       hrTableData = [];
-  };
+  }
+  ;
 
   // 详情展示处理
   useEffect(() => {
@@ -916,7 +917,7 @@ const notifications: React.FC = () => {
             </Space>
           }
         >
-          <Table columns={hrDetailTableHead} dataSource={hrTableData}/>
+          <Table bordered={true} size={"small"} columns={hrDetailTableHead} dataSource={hrTableData}/>
         </Card>
       )}
 
@@ -950,7 +951,8 @@ const notifications: React.FC = () => {
             </Space>
           }
         >
-          <Table columns={mydDetailTableHead} dataSource={mydTableData} loading={loadingChat}/>
+          <Table bordered={true} size={"small"} columns={mydDetailTableHead} dataSource={mydTableData}
+                 loading={loadingChat}/>
         </Card>
       )}
       {/*日报卡片*/}
