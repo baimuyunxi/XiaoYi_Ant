@@ -34,6 +34,7 @@ import {
 } from './service'
 import {useRequest} from "@umijs/max";
 import * as XLSX from 'xlsx';
+import {hidden} from "kolorist";
 
 const {RangePicker} = DatePicker;
 
@@ -532,95 +533,7 @@ const notifications: React.FC = () => {
   /**
    * 满意度相关详情处理
    */
-    // 表头
-  const mydDetailTableHead = [
-      {
-        title: '场景',
-        dataIndex: "mydDetailSense",
-        align: "center",
-        ...getColumnSearchProps('mydDetailSense'),
-      },
-      {
-        title: '发送量',
-        children: [
-          {
-            title: '本期',
-            dataIndex: "mydDetailSendB",
-            align: "center",
-          },
-          {
-            title: '上期',
-            dataIndex: "mydDetailSendS",
-            align: "center",
-          },
-        ]
-      },
-      {
-        title: '参评率',
-        children: [
-          {
-            title: '本期',
-            dataIndex: "mydDetailParB",
-            align: "center",
-          },
-          {
-            title: '上期',
-            dataIndex: "mydDetailParS",
-            align: "center",
-          },
-        ]
-      },
-      {
-        title: '十分满意量',
-        dataIndex: "mydDetailVerySatQuan",
-        align: "center",
-      },
-      {
-        title: '满意量',
-        dataIndex: "mydDetailSatQuan",
-        align: "center",
-      },
-      {
-        title: '一般量',
-        dataIndex: "mydDetailGenQuan",
-        align: "center",
-      },
-      {
-        title: '不满意量',
-        dataIndex: "mydDetailDisQuan",
-        align: "center",
-      },
-      {
-        title: '满意率',
-        children: [
-          {
-            title: '本期',
-            dataIndex: "mydDetailSatRateB",
-            align: "center",
-          },
-          {
-            title: '上期',
-            dataIndex: "mydDetailSatRateS",
-            align: "center",
-          },
-        ]
-      },
-      {
-        title: "影响整体满意度",
-        dataIndex: "mydDetailEffect",
-        align: "center",
-        sorter: (a, b) => {
-          // 移除字符串中的百分号，并将其转换为浮点数
-          const aValue = parseFloat(a.mydDetailEffect.replace('%', ''));
-          const bValue = parseFloat(b.mydDetailEffect.replace('%', ''));
-
-          // 比较转换后的数值
-          return aValue - bValue;
-        },
-      }
-    ];
-
-  // 动态 Tab 切换 Table 数据
+    // 动态 Tab 切换 Table 数据
   const [selectedTabKey, mydSetSelectedTabKey] = useState('mydOverall');
   let mydTableData;
   switch (selectedTabKey) {
@@ -636,6 +549,108 @@ const notifications: React.FC = () => {
     default:
       mydTableData = [];
   }
+
+  // 表头
+  const mydDetailTableHead = [
+    {
+      title: '场景',
+      dataIndex: "mydDetailSense",
+      align: "center",
+      ...getColumnSearchProps('mydDetailSense'),
+    },
+    selectedTabKey === 'mydOverall' && {
+      title: "命中量",
+      dataIndex: "mydHitQuantity",
+      align: "center",
+      width: 80,
+      sorter: (a, b) => {
+        // 移除字符串中的百分号，并将其转换为浮点数
+        const aValue = parseFloat(a.mydHitQuantity);
+        const bValue = parseFloat(b.mydHitQuantity);
+        // 比较转换后的数值
+        return aValue - bValue;
+      },
+    },
+    {
+      title: '发送量',
+      children: [
+        {
+          title: '本期',
+          dataIndex: "mydDetailSendB",
+          align: "center",
+        },
+        {
+          title: '上期',
+          dataIndex: "mydDetailSendS",
+          align: "center",
+        },
+      ]
+    },
+    {
+      title: '参评率',
+      children: [
+        {
+          title: '本期',
+          dataIndex: "mydDetailParB",
+          align: "center",
+        },
+        {
+          title: '上期',
+          dataIndex: "mydDetailParS",
+          align: "center",
+        },
+      ]
+    },
+    {
+      title: '十分满意量',
+      dataIndex: "mydDetailVerySatQuan",
+      align: "center",
+    },
+    {
+      title: '满意量',
+      dataIndex: "mydDetailSatQuan",
+      align: "center",
+    },
+    {
+      title: '一般量',
+      dataIndex: "mydDetailGenQuan",
+      align: "center",
+    },
+    {
+      title: '不满意量',
+      dataIndex: "mydDetailDisQuan",
+      align: "center",
+    },
+    {
+      title: '满意率',
+      children: [
+        {
+          title: '本期',
+          dataIndex: "mydDetailSatRateB",
+          align: "center",
+        },
+        {
+          title: '上期',
+          dataIndex: "mydDetailSatRateS",
+          align: "center",
+        },
+      ]
+    },
+    {
+      title: "影响整体满意度",
+      dataIndex: "mydDetailEffect",
+      align: "center",
+      sorter: (a, b) => {
+        // 移除字符串中的百分号，并将其转换为浮点数
+        const aValue = parseFloat(a.mydDetailEffect.replace('%', ''));
+        const bValue = parseFloat(b.mydDetailEffect.replace('%', ''));
+
+        // 比较转换后的数值
+        return aValue - bValue;
+      },
+    }
+  ].filter(Boolean);
+
 
   /**
    * 呼入相关详情处理
@@ -917,7 +932,8 @@ const notifications: React.FC = () => {
             </Space>
           }
         >
-          <Table bordered={true} size={"small"} columns={hrDetailTableHead} dataSource={hrTableData}/>
+          <Table bordered={true} size={"middle"} columns={hrDetailTableHead} dataSource={hrTableData}
+                 pagination={{defaultPageSize: 20}} scroll={{y: 300}}/>
         </Card>
       )}
 
@@ -951,8 +967,8 @@ const notifications: React.FC = () => {
             </Space>
           }
         >
-          <Table bordered={true} size={"small"} columns={mydDetailTableHead} dataSource={mydTableData}
-                 loading={loadingChat}/>
+          <Table bordered={true} size={"middle"} columns={mydDetailTableHead} dataSource={mydTableData}
+                 loading={loadingChat} pagination={{defaultPageSize: 20}} scroll={{y: 300}}/>
         </Card>
       )}
       {/*日报卡片*/}
@@ -970,10 +986,10 @@ const notifications: React.FC = () => {
           </Row>
           <Divider/>
           <Table columns={hrDataColumns} dataSource={processedData} bordered={true} pagination={false}
-                 size={"small"} title={() => <h3>呼叫量数据</h3>} loading={searchDataLoading}/>
+                 size={"middle"} title={() => <h3>呼叫量数据</h3>} loading={searchDataLoading}/>
           <Divider/>
           <Table columns={mydDataColumns} dataSource={processedDataCombined} bordered={true} pagination={false}
-                 size={"small"} title={() => <h3>满意度数据</h3>} loading={searchDataLoading}/>
+                 size={"middle"} title={() => <h3>满意度数据</h3>} loading={searchDataLoading}/>
         </Card>
       )}
     </PageContainer>

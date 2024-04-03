@@ -8,7 +8,7 @@ const Footer: React.FC = () => {
       style={{
         background: 'none',
       }}
-      copyright="湖南客户服务中心"
+      copyright="省客户服务中心"
     />
   );
 };
