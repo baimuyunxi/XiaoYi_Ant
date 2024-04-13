@@ -96,6 +96,7 @@ const notifications: React.FC = () => {
   const [mydChatData, setMydChatData] = useState([]); // 微信
   const [mydMessageData, setMydMessageData] = useState([]); // 短信
   const [mydOverallData, setMydOverallData] = useState([]); // 整体
+  const [mySatOverallData, setMySatOverallData] = useState([]);
 
   const [loadingChat, setLoadingChat] = useState(false); // 表格加载状态定义
 
@@ -805,31 +806,77 @@ const notifications: React.FC = () => {
 
 
   // 下载处理
-  const handleDetailClick = async () => {
-    const params = {
-      day_ids: dates[0].format("YYYY-MM-DD HH:mm:ss"),
-      day_ide: dates[1].format("YYYY-MM-DD HH:mm:ss"),
-      last_day_ids: comparisonDates?.[0].format("YYYY-MM-DD HH:mm:ss"),
-      last_day_ide: comparisonDates?.[1].format("YYYY-MM-DD HH:mm:ss"),
-    };
+  const {loading: setHandleDetailClick, run: handleDetailClick} = useRequest(
+      async () => {
+        const params = {
+          day_ids: dates[0].format("YYYY-MM-DD HH:mm:ss"),
+          day_ide: dates[1].format("YYYY-MM-DD HH:mm:ss"),
+          last_day_ids: comparisonDates?.[0].format("YYYY-MM-DD HH:mm:ss"),
+          last_day_ide: comparisonDates?.[1].format("YYYY-MM-DD HH:mm:ss"),
+        };
 
 
-    if (currentCard === 'callVolume' && hrselectedTabKey === 'rgSense') {
-      const detailResponse = await queryCallSenseDetail(params);
-      // TODO: 处理响应数据
-    } else if (currentCard === 'callVolume' && hrselectedTabKey === 'rgActive') {
-      const detailResponse = await queryCallInitiativeDetail(params);
-      // TODO: 处理响应数据
-    } else if (currentCard === 'callVolume' && hrselectedTabKey === 'rgRejection') {
-      const detailResponse = await queryCallRejectionDetail(params);
-      // TODO: 处理响应数据
-    }
-    // 对于满意度详情，不区分当前是整体/短信/微信
-    else if (currentCard === 'satisfaction') {
-      const satDetailResponse = await querySatDetail(params);
-      // TODO: 处理响应数据
-    }
-  };
+        if (currentCard === 'callVolume' && hrselectedTabKey === 'rgSense') {
+          const detailResponse = await queryCallSenseDetail(params);
+          // TODO: 处理响应数据
+        } else if (currentCard === 'callVolume' && hrselectedTabKey === 'rgActive') {
+          const detailResponse = await queryCallInitiativeDetail(params);
+          // TODO: 处理响应数据
+        } else if (currentCard === 'callVolume' && hrselectedTabKey === 'rgRejection') {
+          const detailResponse = await queryCallRejectionDetail(params);
+          // TODO: 处理响应数据
+        }
+        // 对于满意度详情，不区分当前是整体/短信/微信
+        else if (currentCard === 'satisfaction') {
+          // const satDetailResponse = await querySatDetail(params);
+          // // 处理响应数据以进行下载
+          // if (satDetailResponse) {
+          //   const url = window.URL.createObjectURL(satDetailResponse);
+          //   const a = document.createElement('a');
+          //
+          //   // 获取当前日期并格式化为yyyyMMdd
+          //   const currentDate = new Date();
+          //   const formattedDate = currentDate.getFullYear().toString() +
+          //     (currentDate.getMonth() + 1).toString().padStart(2, '0') +
+          //     currentDate.getDate().toString().padStart(2, '0')
+          //
+          //   a.href = url;
+          //   a.download = `satDetail_${formattedDate}.csv`; // 解析文件名
+          //   document.body.appendChild(a);
+          //   a.click();
+          //
+          //   // 清理DOM和释放blob URL
+          //   document.body.removeChild(a);
+          //   window.URL.revokeObjectURL(url);
+          //   message.success('详细数据下载成功！')
+          //
+          // } else {
+          //   message.error('详情数据下载失败！');
+          // }
+          querySatDetail(params).then(({ data, filename }) => {
+            if (data instanceof Blob) { // 确保 data 是一个 Blob 对象
+              const url = window.URL.createObjectURL(data);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = filename; // 使用从后端获取的文件名
+              document.body.appendChild(a);
+              a.click();
+              document.body.removeChild(a);
+              window.URL.revokeObjectURL(url);
+              message.success('详细数据开始下载！');
+            } else {
+              console.error('返回的数据类型不是 Blob:', data);
+              message.error('下载失败，返回数据不是有效的 Blob 对象！');
+            }
+          }).catch((error) => {
+            message.error('详情数据下载失败！');
+            console.error(error);
+          });
+
+        }
+      }
+    );
+
 
   return (
     <PageContainer>
@@ -961,6 +1008,7 @@ const notifications: React.FC = () => {
                 shape="round"
                 icon={<FileSearchOutlined/>}
                 onClick={handleDetailClick}
+                loading={setHandleDetailClick}
               >
                 详情
               </Button>
