@@ -91,7 +91,7 @@ const notifications: React.FC = () => {
   // 创建一个图标组件
   const MyIcon = createFromIconfontCN({
     scriptUrl: [
-      '//at.alicdn.com/t/c/font_4507680_9ycvkngnd8g.js',
+      '//at.alicdn.com/t/c/font_4507680_ufz2ssxabp.js',
     ] // 在 iconfont.cn 上生成
   });
 
@@ -101,7 +101,7 @@ const notifications: React.FC = () => {
     messageApi.open({
       type: 'warning',
       content: '详细数据开始下载！请耐心等待！',
-      icon: <MyIcon type="icon-dengdaixiazai"/>,
+      icon: <MyIcon type="icon-waiting"/>,
     });
   };
 
@@ -109,7 +109,7 @@ const notifications: React.FC = () => {
     messageApi.open({
       type: 'success',
       content: '详细数据下载完成！',
-      icon: <MyIcon type="icon-xiazaichenggong"/>,
+      icon: <MyIcon type="icon-success"/>,
     });
   }
 
@@ -117,7 +117,7 @@ const notifications: React.FC = () => {
     messageApi.open({
       type: 'error',
       content: '下载失败，返回数据不是有效的 Blob 对象！',
-      icon: <MyIcon type="icon-shangchuancuowurizhi"/>,
+      icon: <MyIcon type="icon-problem-solving"/>,
     });
   }
 
@@ -125,7 +125,31 @@ const notifications: React.FC = () => {
     messageApi.open({
       type: 'error',
       content: '详情数据下载失败！',
-      icon: <MyIcon type="icon-xiazaishibai"/>,
+      icon: <MyIcon type="icon-error"/>,
+    });
+  }
+
+  const UniversalSuccess = () => {
+    messageApi.open({
+      type: 'success',
+      content: '成功！',
+      icon: <MyIcon type="icon-email"/>,
+    });
+  }
+
+  const UniversalErr = () => {
+    messageApi.open({
+      type: 'error',
+      content: '失败！',
+      icon: <MyIcon type="icon-failed-fill"/>,
+    });
+  }
+
+  const UniversalTry = () => {
+    messageApi.open({
+      type: 'error',
+      content: '异常！',
+      icon: <MyIcon type="icon-shangchuancuowurizhi"/>,
     });
   }
 
@@ -220,16 +244,18 @@ const notifications: React.FC = () => {
 
           // 处理API响应
           if (satisfactionResponse.code === '200') {
+            UniversalSuccess();
             const newData = createNewArr(satisfactionResponse.data, ["mydChannel", "mydContactPoint", "mydRemarks"]);
             setProcessedDataCombined(newData);
             // const processedData = createNewArr(mockHrData, ["hrSpecialArea", "hrRemarks"]);
 
           } else {
             console.error('获取数据失败:', satisfactionResponse.message);
-            message.error('获取满意度数据失败');
+            UniversalErr();
           }
         } catch (e) {
-          console.error("Error fetching data:", e)
+          UniversalTry();
+          console.error("Error fetching data:", e);
         }
       },
       {
@@ -817,20 +843,22 @@ const notifications: React.FC = () => {
             const overallResponse = await querySatOverall(params);
             // TODO: 处理响应数据
             if (overallResponse.code === '200') {
+              UniversalSuccess();
               setMydOverallData(overallResponse.data);
             } else {
               console.error('获取数据失败:', overallResponse.message);
-              message.error('获取满意度数据失败');
+              UniversalErr();
             }
             break;
           case 'mydSms':
             const mesResponse = await querySatMes(params);
             // TODO: 处理响应数据
             if (mesResponse.code === '200') {
+              UniversalSuccess();
               setMydMessageData(mesResponse.data);
             } else {
               console.error('获取数据失败:', mesResponse.message);
-              message.error('获取满意度数据失败');
+              UniversalErr();
             }
             break;
           case 'mydWechat':
@@ -838,10 +866,11 @@ const notifications: React.FC = () => {
             // TODO: 处理响应数据
             // 处理API响应
             if (chatResponse.code === '200') {
+              UniversalSuccess();
               setMydChatData(chatResponse.data);
             } else {
               console.error('获取数据失败:', chatResponse.message);
-              message.error('获取满意度数据失败');
+              UniversalErr();
             }
             break;
         }
@@ -854,52 +883,53 @@ const notifications: React.FC = () => {
 
 
   // 下载处理
-  const {loading: setHandleDetailClick, run: handleDetailClick} = useRequest(
-    async () => {
-      const params = {
-        day_ids: dates[0].format("YYYY-MM-DD HH:mm:ss"),
-        day_ide: dates[1].format("YYYY-MM-DD HH:mm:ss"),
-        last_day_ids: comparisonDates?.[0].format("YYYY-MM-DD HH:mm:ss"),
-        last_day_ide: comparisonDates?.[1].format("YYYY-MM-DD HH:mm:ss"),
-      };
+  const {loading: handleDetailClickLoading, run: handleDetailClick,} = useRequest(async () => {
+    console.log("Request started, current loading state:", handleDetailClickLoading);
+    const params = {
+      day_ids: dates[0].format("YYYY-MM-DD HH:mm:ss"),
+      day_ide: dates[1].format("YYYY-MM-DD HH:mm:ss"),
+      last_day_ids: comparisonDates?.[0]?.format("YYYY-MM-DD HH:mm:ss"),
+      last_day_ide: comparisonDates?.[1]?.format("YYYY-MM-DD HH:mm:ss"),
+    };
 
-
-      if (currentCard === 'callVolume' && hrselectedTabKey === 'rgSense') {
-        const detailResponse = await queryCallSenseDetail(params);
-        // TODO: 处理响应数据
-      } else if (currentCard === 'callVolume' && hrselectedTabKey === 'rgActive') {
-        const detailResponse = await queryCallInitiativeDetail(params);
-        // TODO: 处理响应数据
-      } else if (currentCard === 'callVolume' && hrselectedTabKey === 'rgRejection') {
-        const detailResponse = await queryCallRejectionDetail(params);
-        // TODO: 处理响应数据
+    try {
+      let response;
+      if (currentCard === 'callVolume') {
+        switch (selectedTabKey) {
+          case 'rgSense':
+            response = await queryCallSenseDetail(params);
+            break;
+          case 'rgActive':
+            response = await queryCallInitiativeDetail(params);
+            break;
+          case 'rgRejection':
+            response = await queryCallRejectionDetail(params);
+            break;
+        }
+        // Handle response data
+      } else if (currentCard === 'satisfaction') {
+        response = await querySatDetail(params);
+        if (response.data instanceof Blob) {
+          const url = window.URL.createObjectURL(response.data);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = response.filename; // Use the filename from the backend
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          window.URL.revokeObjectURL(url);
+          SatDetailSucces();
+        } else {
+          SatDetailErr();
+          console.error('返回的数据类型不是 Blob:', response.data);
+          throw new Error('Data is not a Blob');
+        }
       }
-      // 对于满意度详情，不区分当前是整体/短信/微信
-      else if (currentCard === 'satisfaction') {
-        querySatDetail(params).then(({data, filename}) => {
-          if (data instanceof Blob) { // 确保 data 是一个 Blob 对象
-            // message.success('详细数据开始下载！请耐心等待！');
-            const url = window.URL.createObjectURL(data);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = filename; // 使用从后端获取的文件名
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            window.URL.revokeObjectURL(url);
-            SatDetailSucces();
-          } else {
-            console.error('返回的数据类型不是 Blob:', data);
-            SatDetailErr();
-          }
-        }).catch((error) => {
-          SatDetailCat();
-          console.error(error);
-        });
-
-      }
+    } catch (error) {
+      console.error('Error during API call:', error);
+      SatDetailCat();
     }
-  );
+  });
 
   // 组合点击事件函数
   const handleButtonClick = async () => {
@@ -1043,7 +1073,7 @@ const notifications: React.FC = () => {
                   shape="round"
                   icon={<FileSearchOutlined/>}
                   onClick={handleButtonClick}
-                  loading={setHandleDetailClick}
+                  loading={handleDetailClickLoading}
                 >
                   详情
                 </Button>
