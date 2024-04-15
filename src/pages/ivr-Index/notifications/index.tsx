@@ -1,4 +1,11 @@
-import {DownloadOutlined, FileSearchOutlined, PlusOutlined, RollbackOutlined, SearchOutlined} from '@ant-design/icons';
+import {
+  createFromIconfontCN,
+  DownloadOutlined,
+  FileSearchOutlined,
+  PlusOutlined,
+  RollbackOutlined,
+  SearchOutlined
+} from '@ant-design/icons';
 import React, {useEffect, useLayoutEffect, useRef, useState} from 'react';
 import Highlighter from 'react-highlight-words';
 import {
@@ -81,6 +88,47 @@ const createNewArr = (data, columnIndexes) => {
 };
 
 const notifications: React.FC = () => {
+  // 创建一个图标组件
+  const MyIcon = createFromIconfontCN({
+    scriptUrl: [
+      '//at.alicdn.com/t/c/font_4507680_9ycvkngnd8g.js',
+    ] // 在 iconfont.cn 上生成
+  });
+
+  // 消息提醒
+  const [messageApi, contextHolder] = message.useMessage();
+  const satSuccess = () => {
+    messageApi.open({
+      type: 'warning',
+      content: '详细数据开始下载！请耐心等待！',
+      icon: <MyIcon type="icon-dengdaixiazai"/>,
+    });
+  };
+
+  const SatDetailSucces = () => {
+    messageApi.open({
+      type: 'success',
+      content: '详细数据下载完成！',
+      icon: <MyIcon type="icon-xiazaichenggong"/>,
+    });
+  }
+
+  const SatDetailErr = () => {
+    messageApi.open({
+      type: 'error',
+      content: '下载失败，返回数据不是有效的 Blob 对象！',
+      icon: <MyIcon type="icon-shangchuancuowurizhi"/>,
+    });
+  }
+
+  const SatDetailCat = () => {
+    messageApi.open({
+      type: 'error',
+      content: '详情数据下载失败！',
+      icon: <MyIcon type="icon-xiazaishibai"/>,
+    });
+  }
+
   // 自定义样式引用
   const {styles} = useStyles();
 
@@ -807,75 +855,57 @@ const notifications: React.FC = () => {
 
   // 下载处理
   const {loading: setHandleDetailClick, run: handleDetailClick} = useRequest(
-      async () => {
-        const params = {
-          day_ids: dates[0].format("YYYY-MM-DD HH:mm:ss"),
-          day_ide: dates[1].format("YYYY-MM-DD HH:mm:ss"),
-          last_day_ids: comparisonDates?.[0].format("YYYY-MM-DD HH:mm:ss"),
-          last_day_ide: comparisonDates?.[1].format("YYYY-MM-DD HH:mm:ss"),
-        };
+    async () => {
+      const params = {
+        day_ids: dates[0].format("YYYY-MM-DD HH:mm:ss"),
+        day_ide: dates[1].format("YYYY-MM-DD HH:mm:ss"),
+        last_day_ids: comparisonDates?.[0].format("YYYY-MM-DD HH:mm:ss"),
+        last_day_ide: comparisonDates?.[1].format("YYYY-MM-DD HH:mm:ss"),
+      };
 
 
-        if (currentCard === 'callVolume' && hrselectedTabKey === 'rgSense') {
-          const detailResponse = await queryCallSenseDetail(params);
-          // TODO: 处理响应数据
-        } else if (currentCard === 'callVolume' && hrselectedTabKey === 'rgActive') {
-          const detailResponse = await queryCallInitiativeDetail(params);
-          // TODO: 处理响应数据
-        } else if (currentCard === 'callVolume' && hrselectedTabKey === 'rgRejection') {
-          const detailResponse = await queryCallRejectionDetail(params);
-          // TODO: 处理响应数据
-        }
-        // 对于满意度详情，不区分当前是整体/短信/微信
-        else if (currentCard === 'satisfaction') {
-          // const satDetailResponse = await querySatDetail(params);
-          // // 处理响应数据以进行下载
-          // if (satDetailResponse) {
-          //   const url = window.URL.createObjectURL(satDetailResponse);
-          //   const a = document.createElement('a');
-          //
-          //   // 获取当前日期并格式化为yyyyMMdd
-          //   const currentDate = new Date();
-          //   const formattedDate = currentDate.getFullYear().toString() +
-          //     (currentDate.getMonth() + 1).toString().padStart(2, '0') +
-          //     currentDate.getDate().toString().padStart(2, '0')
-          //
-          //   a.href = url;
-          //   a.download = `satDetail_${formattedDate}.csv`; // 解析文件名
-          //   document.body.appendChild(a);
-          //   a.click();
-          //
-          //   // 清理DOM和释放blob URL
-          //   document.body.removeChild(a);
-          //   window.URL.revokeObjectURL(url);
-          //   message.success('详细数据下载成功！')
-          //
-          // } else {
-          //   message.error('详情数据下载失败！');
-          // }
-          querySatDetail(params).then(({ data, filename }) => {
-            if (data instanceof Blob) { // 确保 data 是一个 Blob 对象
-              const url = window.URL.createObjectURL(data);
-              const a = document.createElement('a');
-              a.href = url;
-              a.download = filename; // 使用从后端获取的文件名
-              document.body.appendChild(a);
-              a.click();
-              document.body.removeChild(a);
-              window.URL.revokeObjectURL(url);
-              message.success('详细数据开始下载！');
-            } else {
-              console.error('返回的数据类型不是 Blob:', data);
-              message.error('下载失败，返回数据不是有效的 Blob 对象！');
-            }
-          }).catch((error) => {
-            message.error('详情数据下载失败！');
-            console.error(error);
-          });
-
-        }
+      if (currentCard === 'callVolume' && hrselectedTabKey === 'rgSense') {
+        const detailResponse = await queryCallSenseDetail(params);
+        // TODO: 处理响应数据
+      } else if (currentCard === 'callVolume' && hrselectedTabKey === 'rgActive') {
+        const detailResponse = await queryCallInitiativeDetail(params);
+        // TODO: 处理响应数据
+      } else if (currentCard === 'callVolume' && hrselectedTabKey === 'rgRejection') {
+        const detailResponse = await queryCallRejectionDetail(params);
+        // TODO: 处理响应数据
       }
-    );
+      // 对于满意度详情，不区分当前是整体/短信/微信
+      else if (currentCard === 'satisfaction') {
+        querySatDetail(params).then(({data, filename}) => {
+          if (data instanceof Blob) { // 确保 data 是一个 Blob 对象
+            // message.success('详细数据开始下载！请耐心等待！');
+            const url = window.URL.createObjectURL(data);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename; // 使用从后端获取的文件名
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+            SatDetailSucces();
+          } else {
+            console.error('返回的数据类型不是 Blob:', data);
+            SatDetailErr();
+          }
+        }).catch((error) => {
+          SatDetailCat();
+          console.error(error);
+        });
+
+      }
+    }
+  );
+
+  // 组合点击事件函数
+  const handleButtonClick = async () => {
+    satSuccess(); // 显示开始操作的消息提示
+    await handleDetailClick(); // 然后执行数据下载操作
+  };
 
 
   return (
@@ -968,14 +998,17 @@ const notifications: React.FC = () => {
                 icon={<DownloadOutlined/>}
                 onClick={exportToExcelCallVolume}
               />
-              <Button
-                type="primary"
-                shape="round"
-                icon={<FileSearchOutlined/>}
-                onClick={handleDetailClick}
-              >
-                详情
-              </Button>
+              <>
+                {contextHolder}
+                <Button
+                  type="primary"
+                  shape="round"
+                  icon={<FileSearchOutlined/>}
+                  onClick={handleButtonClick}
+                >
+                  详情
+                </Button>
+              </>
             </Space>
           }
         >
@@ -1003,15 +1036,18 @@ const notifications: React.FC = () => {
                 onClick={exportToExcelSatisfaction}
                 loading={setExportToExcelSat}
               />
-              <Button
-                type="primary"
-                shape="round"
-                icon={<FileSearchOutlined/>}
-                onClick={handleDetailClick}
-                loading={setHandleDetailClick}
-              >
-                详情
-              </Button>
+              <>
+                {contextHolder}
+                <Button
+                  type="primary"
+                  shape="round"
+                  icon={<FileSearchOutlined/>}
+                  onClick={handleButtonClick}
+                  loading={setHandleDetailClick}
+                >
+                  详情
+                </Button>
+              </>
             </Space>
           }
         >
