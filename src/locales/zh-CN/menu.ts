@@ -52,4 +52,5 @@ export default {
   // 数据分析大类
   'menu.analysis':'数据分析',
   'menu.analysis.notifications':'日报',
+  'menu.analysis.xiaoYiIterate':'版本',
 };

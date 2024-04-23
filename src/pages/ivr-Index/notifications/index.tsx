@@ -41,7 +41,6 @@ import {
 } from './service'
 import {useRequest} from "@umijs/max";
 import * as XLSX from 'xlsx';
-import {hidden} from "kolorist";
 
 const {RangePicker} = DatePicker;
 

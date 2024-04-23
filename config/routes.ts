@@ -81,6 +81,12 @@ export default [
         path:'/ivr-Index/notifications',
         component: './ivr-Index/notifications',
       },
+      {
+        name:'xiaoYiIterate',
+        icon:'MergeOutlined',
+        path: '/ivr-Index/xiaoYiIterate',
+        component: './ivr-Index/xiaoYiIterate',
+      },
     ]
   },
   // {
