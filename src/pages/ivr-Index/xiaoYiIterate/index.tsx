@@ -7,6 +7,7 @@ import moment from "moment";
 import Highlighter from 'react-highlight-words';
 import {useRequest} from "@umijs/max";
 import {queryIterate} from "./service";
+import * as XLSX from "xlsx";
 
 const {RangePicker} = DatePicker;
 
@@ -167,17 +168,17 @@ const iterates: React.FC = () => {
       title: '场景名称',
       dataIndex: 'DetailSense',
       align: 'center',
-      ...getColumnSearchProps(""),
+      ...getColumnSearchProps("DetailSense"),
       fixed: 'left',
       width: 200,
     },
     {
-      title: formatDateRange(dateRange1)  +'命中量',
+      title: formatDateRange(dateRange1) + '命中量',
       dataIndex: 'theAmountOfHits',
       align: 'center',
     },
     {
-      title: formatDateRange(dateRange2)  +'命中量',
+      title: formatDateRange(dateRange2) + '命中量',
       dataIndex: 'theAmountOfHits1',
       align: 'center',
     },
@@ -187,12 +188,12 @@ const iterates: React.FC = () => {
       align: 'center',
     },
     {
-      title: formatDateRange(dateRange1)  +'首解率（2小时）',
+      title: formatDateRange(dateRange1) + '首解率（2小时）',
       dataIndex: 'numberOfEntries',
       align: 'center',
     },
     {
-      title: formatDateRange(dateRange2)  +'首解率（2小时）',
+      title: formatDateRange(dateRange2) + '首解率（2小时）',
       dataIndex: 'numberOfEntries1',
       align: 'center',
     },
@@ -202,12 +203,12 @@ const iterates: React.FC = () => {
       align: 'center',
     },
     {
-      title: formatDateRange(dateRange1)  +'满意度',
+      title: formatDateRange(dateRange1) + '满意度',
       dataIndex: 'satisfactionRate',
       align: 'center',
     },
     {
-      title: formatDateRange(dateRange2)  +'满意度',
+      title: formatDateRange(dateRange2) + '满意度',
       dataIndex: 'satisfactionRate1',
       align: 'center',
     },
@@ -217,12 +218,12 @@ const iterates: React.FC = () => {
       align: 'center',
     },
     {
-      title: formatDateRange(dateRange1)  +'参评量',
+      title: formatDateRange(dateRange1) + '参评量',
       dataIndex: 'ofTheFirstSolution',
       align: 'center',
     },
     {
-      title: formatDateRange(dateRange2)  +'参评量',
+      title: formatDateRange(dateRange2) + '参评量',
       dataIndex: 'ofTheFirstSolution1',
       align: 'center',
     },
@@ -232,12 +233,12 @@ const iterates: React.FC = () => {
       align: 'center',
     },
     {
-      title: formatDateRange(dateRange1)  +'转人工占比',
+      title: formatDateRange(dateRange1) + '转人工占比',
       dataIndex: 'versionOfLaborVolume',
       align: 'center',
     },
     {
-      title: formatDateRange(dateRange2)  +'转人工占比',
+      title: formatDateRange(dateRange2) + '转人工占比',
       dataIndex: 'versionOfLaborVolume1',
       align: 'center',
     },
@@ -256,11 +257,11 @@ const iterates: React.FC = () => {
   ];
 
   // 进行查询
-  const [iterateData,setIterateData] = useState([])
-  const {loading: searchDataLoading,run:runSearch}=useRequest(
-    async ()=>{
+  const [iterateData, setIterateData] = useState([])
+  const {loading: searchDataLoading, run: runSearch} = useRequest(
+    async () => {
       try {
-        console.log(dateRange1,dateRange2)
+        console.log(dateRange1, dateRange2)
         // 从状态中获取时间范围
         const day_ids = dateRange1[0].format("YYYY-MM-DD");
         const day_ide = dateRange1[1].format("YYYY-MM-DD");
@@ -289,7 +290,40 @@ const iterates: React.FC = () => {
     {
       manual: true, // 手动触发请求
     }
-  )
+  );
+
+  // 数据导出
+  const {loading: setExportToLoading, run: exportToExcelMain} = useRequest(
+    async () => {
+      const wb = XLSX.utils.book_new();
+
+      // 处理可能的嵌套表头
+      const flatColumns = iterateColumns.reduce((acc, item) => {
+        if (item.children) {
+          return [...acc, ...item.children.map(child => ({...child, title: `${item.title} ${child.title}`}))];
+        }
+        return [...acc, item];
+      }, []);
+
+      const ws = XLSX.utils.json_to_sheet(iterateData.map(item => {
+        const row = {};
+        flatColumns.forEach(col => {
+          row[col.title] = item[col.dataIndex];
+        });
+        return row;
+      }), {header: flatColumns.map(col => col.title), skipHeader: false});
+
+      XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
+
+      const currentDateTime = moment().format('YYYYMMDD');
+      const fileName = `automaticIteration${currentDateTime}.xlsx`;
+
+      XLSX.writeFile(wb, fileName);
+    },
+    {
+      manual: true, // 表示手动触发异步操作
+    }
+  );
 
   return (
     <PageContainer>
@@ -340,12 +374,13 @@ const iterates: React.FC = () => {
             <h1 className={styles.noMarginH1}>全场景详情</h1>
           </Col>
           <Col>
-            <Button type="primary" shape="round" icon={<DownloadOutlined/>}/>
+            <Button type="primary" shape="round" icon={<DownloadOutlined/>}
+            loading={setExportToLoading} onClick={exportToExcelMain}/>
           </Col>
         </Row>
         <Divider/>
         <Table columns={iterateColumns} bordered={true} size={"middle"}
-               pagination={{defaultPageSize: 20}} scroll={{y: 1300, x: 2600}}
+               pagination={{defaultPageSize: 20}} scroll={{y: 460, x: 2600}}
                loading={searchDataLoading} dataSource={iterateData}
         />
       </Card>
