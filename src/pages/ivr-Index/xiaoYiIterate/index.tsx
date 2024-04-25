@@ -5,6 +5,8 @@ import useStyles from "./style.style";
 import {createFromIconfontCN, DownloadOutlined, SearchOutlined} from "@ant-design/icons";
 import moment from "moment";
 import Highlighter from 'react-highlight-words';
+import {useRequest} from "@umijs/max";
+import {queryIterate} from "./service";
 
 const {RangePicker} = DatePicker;
 
@@ -82,8 +84,6 @@ const iterates: React.FC = () => {
   const disabledDate = (current: moment.Moment) => {
     return current && current.isAfter(moment().endOf('day'));
   };
-  const [comparisonDates, setComparisonDates] = useState<[moment.Moment, moment.Moment]>();
-  const [comparisonDatesLast, setComparisonDatesLast] = useState<[moment.Moment, moment.Moment]>();
 
   // 场景筛选
   const searchInput = useRef(null);
@@ -165,7 +165,7 @@ const iterates: React.FC = () => {
   const iterateColumns = [
     {
       title: '场景名称',
-      dataIndex: '',
+      dataIndex: 'DetailSense',
       align: 'center',
       ...getColumnSearchProps(""),
       fixed: 'left',
@@ -173,90 +173,127 @@ const iterates: React.FC = () => {
     },
     {
       title: formatDateRange(dateRange1)  +'命中量',
-      dataIndex: '',
+      dataIndex: 'theAmountOfHits',
       align: 'center',
     },
     {
       title: formatDateRange(dateRange2)  +'命中量',
-      dataIndex: '',
+      dataIndex: 'theAmountOfHits1',
       align: 'center',
     },
     {
       title: '命中量环比',
-      dataIndex: '',
+      dataIndex: 'theAmountOfHitsRatio',
       align: 'center',
     },
     {
       title: formatDateRange(dateRange1)  +'首解率（2小时）',
-      dataIndex: '',
+      dataIndex: 'numberOfEntries',
       align: 'center',
     },
     {
       title: formatDateRange(dateRange2)  +'首解率（2小时）',
-      dataIndex: '',
+      dataIndex: 'numberOfEntries1',
       align: 'center',
     },
     {
       title: '首解率（2小时）环比',
-      dataIndex: '',
+      dataIndex: 'numberOfEntriesRatio',
       align: 'center',
     },
     {
       title: formatDateRange(dateRange1)  +'满意度',
-      dataIndex: '',
+      dataIndex: 'satisfactionRate',
       align: 'center',
     },
     {
       title: formatDateRange(dateRange2)  +'满意度',
-      dataIndex: '',
+      dataIndex: 'satisfactionRate1',
       align: 'center',
     },
     {
       title: '满意度环比',
-      dataIndex: '',
+      dataIndex: 'satisfactionRatio',
       align: 'center',
     },
     {
       title: formatDateRange(dateRange1)  +'参评量',
-      dataIndex: '',
+      dataIndex: 'ofTheFirstSolution',
       align: 'center',
     },
     {
       title: formatDateRange(dateRange2)  +'参评量',
-      dataIndex: '',
+      dataIndex: 'ofTheFirstSolution1',
       align: 'center',
     },
     {
       title: '参评量环比',
-      dataIndex: '',
+      dataIndex: 'ofTheFirstSolutionRatio',
       align: 'center',
     },
     {
       title: formatDateRange(dateRange1)  +'转人工占比',
-      dataIndex: '',
+      dataIndex: 'versionOfLaborVolume',
       align: 'center',
     },
     {
       title: formatDateRange(dateRange2)  +'转人工占比',
-      dataIndex: '',
+      dataIndex: 'versionOfLaborVolume1',
       align: 'center',
     },
     {
       title: '转人工占比环比',
-      dataIndex: '',
+      dataIndex: 'versionOfLaborVolumeRatio',
       align: 'center',
     },
     {
       title: '其他',
-      dataIndex: '',
+      dataIndex: 'effect',
       align: 'center',
       fixed: 'right',
       width: 300
     },
   ];
 
+  // 进行查询
+  const [iterateData,setIterateData] = useState([])
+  const {loading: searchDataLoading,run:runSearch}=useRequest(
+    async ()=>{
+      try {
+        console.log(dateRange1,dateRange2)
+        // 从状态中获取时间范围
+        const day_ids = dateRange1[0].format("YYYY-MM-DD");
+        const day_ide = dateRange1[1].format("YYYY-MM-DD");
+        const last_day_ids = dateRange2[0].format("YYYY-MM-DD");
+        const last_day_ide = dateRange2[1].format("YYYY-MM-DD");
+
+        // 调用API
+        const iterateResponse = await queryIterate({day_ids, day_ide, last_day_ids, last_day_ide});
+
+        // 响应体打印
+        console.log("iterate Response:", iterateResponse);
+
+        // 处理API响应
+        if (iterateResponse.code === '200') {
+          UniversalSuccess();
+          setIterateData(iterateResponse.data);
+        } else {
+          console.error('获取数据失败:', iterateResponse.message);
+          UniversalErr();
+        }
+      } catch (e) {
+        UniversalTry();
+        console.error("Error fetching data:", e);
+      }
+    },
+    {
+      manual: true, // 手动触发请求
+    }
+  )
+
   return (
     <PageContainer>
+      {contextHolder}
       <Card title="时间选择">
         <Space direction="vertical" size={12}>
           <Row align={"middle"} gutter={16} wrap={false}>
@@ -267,6 +304,7 @@ const iterates: React.FC = () => {
               <RangePicker
                 format="YYYY-MM-DD"
                 disabledDate={disabledDate}
+                value={dateRange1}
                 onChange={(dates) => setDateRange1(dates)}
               />
             </Col>
@@ -277,6 +315,7 @@ const iterates: React.FC = () => {
               <RangePicker
                 format="YYYY-MM-DD"
                 disabledDate={disabledDate}
+                value={dateRange2}
                 onChange={(dates) => setDateRange2(dates)}
               />
             </Col>
@@ -284,6 +323,8 @@ const iterates: React.FC = () => {
               <Button
                 type="primary"
                 icon={<SearchOutlined/>}
+                onClick={runSearch}
+                loading={searchDataLoading}
               >
                 查询
               </Button>
@@ -304,7 +345,9 @@ const iterates: React.FC = () => {
         </Row>
         <Divider/>
         <Table columns={iterateColumns} bordered={true} size={"middle"}
-               pagination={{defaultPageSize: 20}} scroll={{y: 1300, x: 2600}}/>
+               pagination={{defaultPageSize: 20}} scroll={{y: 1300, x: 2600}}
+               loading={searchDataLoading} dataSource={iterateData}
+        />
       </Card>
     </PageContainer>
   );

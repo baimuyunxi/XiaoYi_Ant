@@ -939,6 +939,7 @@ const notifications: React.FC = () => {
 
   return (
     <PageContainer>
+      {contextHolder}
       <Card title="时间选择">
         <Space direction='vertical' size={12}>
           <Row align={"middle"} gutter={16} wrap={false}>
@@ -1028,7 +1029,6 @@ const notifications: React.FC = () => {
                 onClick={exportToExcelCallVolume}
               />
               <>
-                {contextHolder}
                 <Button
                   type="primary"
                   shape="round"
