@@ -2,7 +2,6 @@ import {
   createFromIconfontCN,
   DownloadOutlined,
   FileSearchOutlined,
-  PlusOutlined,
   RollbackOutlined,
   SearchOutlined
 } from '@ant-design/icons';
@@ -17,10 +16,9 @@ import {
   Button,
   Table,
   Divider,
-  ConfigProviderProps,
   Flex,
   message,
-  Input
+  Input, notification
 } from "antd";
 import {PageContainer} from "@ant-design/pro-components";
 import moment from "moment";
@@ -90,19 +88,24 @@ const notifications: React.FC = () => {
   // 创建一个图标组件
   const MyIcon = createFromIconfontCN({
     scriptUrl: [
-      '//at.alicdn.com/t/c/font_4507680_ufz2ssxabp.js',
+      '//at.alicdn.com/t/c/font_4507680_6v6ettm44d.js',
     ] // 在 iconfont.cn 上生成
   });
 
   // 消息提醒
   const [messageApi, contextHolder] = message.useMessage();
-  const satSuccess = () => {
-    messageApi.open({
+  const [notificatApi, contextHolder1] = notification.useNotification();
+
+  const WaitingAll = ()=>{
+    notificatApi.open({
       type: 'warning',
-      content: '详细数据开始下载！请耐心等待！',
+      message: '查询中...',
+      description: '非默认时间首次查询&&查询日期区间较大时，效率比较慢！请耐心等待！',
       icon: <MyIcon type="icon-waiting"/>,
+      placement: 'bottomRight',
+      duration: 2
     });
-  };
+  }
 
   const SatDetailSucces = () => {
     messageApi.open({
@@ -117,14 +120,6 @@ const notifications: React.FC = () => {
       type: 'error',
       content: '下载失败，返回数据不是有效的 Blob 对象！',
       icon: <MyIcon type="icon-problem-solving"/>,
-    });
-  }
-
-  const SatDetailCat = () => {
-    messageApi.open({
-      type: 'error',
-      content: '详情数据下载失败！',
-      icon: <MyIcon type="icon-error"/>,
     });
   }
 
@@ -144,13 +139,6 @@ const notifications: React.FC = () => {
     });
   }
 
-  const UniversalTry = () => {
-    messageApi.open({
-      type: 'error',
-      content: '异常！',
-      icon: <MyIcon type="icon-shangchuancuowurizhi"/>,
-    });
-  }
 
   // 自定义样式引用
   const {styles} = useStyles();
@@ -167,7 +155,6 @@ const notifications: React.FC = () => {
   const [mydChatData, setMydChatData] = useState([]); // 微信
   const [mydMessageData, setMydMessageData] = useState([]); // 短信
   const [mydOverallData, setMydOverallData] = useState([]); // 整体
-  const [mySatOverallData, setMySatOverallData] = useState([]);
 
   const [loadingChat, setLoadingChat] = useState(false); // 表格加载状态定义
 
@@ -253,7 +240,12 @@ const notifications: React.FC = () => {
             UniversalErr();
           }
         } catch (e) {
-          UniversalTry();
+          notificatApi.open({
+            type: 'error',
+            message: e.name,
+            description: e.message,
+            icon: <MyIcon type="icon-shangchuancuowurizhi"/>,
+          });
           console.error("Error fetching data:", e);
         }
       },
@@ -822,6 +814,7 @@ const notifications: React.FC = () => {
 
       // 根据当前展示的模块和 Tab 调用相应的 API
       if (currentCard === 'callVolume') {
+        WaitingAll();
         switch (hrselectedTabKey) {
           case 'rgSense':
             const senseResponse = await queryCallSense(params);
@@ -837,6 +830,7 @@ const notifications: React.FC = () => {
             break;
         }
       } else if (currentCard === 'satisfaction') {
+        WaitingAll();
         switch (selectedTabKey) {
           case 'mydOverall':
             const overallResponse = await querySatOverall(params);
@@ -890,6 +884,7 @@ const notifications: React.FC = () => {
       last_day_ids: comparisonDates?.[0]?.format("YYYY-MM-DD HH:mm:ss"),
       last_day_ide: comparisonDates?.[1]?.format("YYYY-MM-DD HH:mm:ss"),
     };
+    WaitingAll();
 
     try {
       let response;
@@ -926,13 +921,17 @@ const notifications: React.FC = () => {
       }
     } catch (error) {
       console.error('Error during API call:', error);
-      SatDetailCat();
+      notificatApi.open({
+        type: 'error',
+        message: error.name,
+        description: error.message,
+        icon: <MyIcon type="icon-shangchuancuowurizhi"/>,
+      });
     }
   });
 
   // 组合点击事件函数
   const handleButtonClick = async () => {
-    satSuccess(); // 显示开始操作的消息提示
     await handleDetailClick(); // 然后执行数据下载操作
   };
 
@@ -940,6 +939,7 @@ const notifications: React.FC = () => {
   return (
     <PageContainer>
       {contextHolder}
+      {contextHolder1}
       <Card title="时间选择">
         <Space direction='vertical' size={12}>
           <Row align={"middle"} gutter={16} wrap={false}>

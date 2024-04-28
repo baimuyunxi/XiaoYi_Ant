@@ -1,4 +1,4 @@
-import {request} from 'umi';
+import axios from 'axios';
 
 // 定义基础API路径
 const BASE_API = '/api/ivrIndex';
@@ -7,13 +7,15 @@ const BASE_API = '/api/ivrIndex';
 async function fetchAPI(endpoint: string, options = {}) {
   const url = `${BASE_API}${endpoint}`;
   try {
-    const response = await request(url, options);
+    // 使用axios进行请求
+    const response = await axios(url, options);
     // 可以在这里处理通用的响应逻辑，例如检查响应状态
-    return response;
+    return response.data; // 注意，axios直接返回的是{data, status, ...}对象
   } catch (error) {
     // 统一错误处理逻辑
     console.error(`请求${url}失败:`, error);
-    throw error; // 可以根据需要重新抛出错误，或者返回一个错误标记
+    // 在这里处理错误，可能是抛出一个自定义错误，或者错误对象
+    throw error;
   }
 }
 
@@ -23,11 +25,20 @@ export async function queryIterate(params: {
   day_ide: string;
   day_ids: string
 }) {
-  console.log("走到了这里", params)
+  // console.log("走到了这里", params);
+  // 调整axios的请求格式
   return fetchAPI('/queryAutoIteration', {
-    method: 'POST',
-    data: {
-      ...params,
-    },
+    method: 'post',
+    data: params,
   });
+}
+
+export async function queryAiChat(params){
+  return fetchAPI('/queryAiChat', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json', // 确保设置了正确的Content-Type头
+    },
+    data: params, // 传递参数
+  })
 }
