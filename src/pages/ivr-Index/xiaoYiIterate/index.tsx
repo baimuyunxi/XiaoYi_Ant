@@ -526,7 +526,12 @@ const iterates: React.FC = () => {
         <Form labelCol={{span: 5}} wrapperCol={{span: 16}} initialValues={currentItem} onFieldsChange={onFieldsChange}
               form={form}>
           <Form.Item
-            label="效果详情"
+            label="场景名称"
+            name="DetailSense">
+            <Input disabled={true}/>
+          </Form.Item>
+          <Form.Item
+            label="初步效果"
             name="effect"
             rules={[{required: true, message: 'Please input!'}]}>
             <Input/>
