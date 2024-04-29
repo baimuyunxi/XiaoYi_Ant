@@ -35,6 +35,9 @@ const useStyles = createStyles(({token}) => {
       borderColor: "#27ac66",
       color: "#27ac66",
     },
+    customTooltip: {
+      minWidth: '480px !important',
+    },
   }
 });
 

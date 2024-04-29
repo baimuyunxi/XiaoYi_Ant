@@ -3,18 +3,17 @@ import {PageContainer} from "@ant-design/pro-components";
 import {
   Button,
   Card,
-  Checkbox,
   Col, ConfigProvider,
   DatePicker,
   Divider,
   Form,
-  Input, Menu,
+  Input,
   message,
   Modal,
   notification,
   Row,
   Space,
-  Table
+  Table, Tooltip
 } from "antd";
 import useStyles from "./style.style";
 import {createFromIconfontCN, DownloadOutlined, SearchOutlined} from "@ant-design/icons";
@@ -185,7 +184,6 @@ const iterates: React.FC = () => {
           UniversalErr();
         }
       } catch (e) {
-        // UniversalTry();
         notificatApi.open({
           type: 'error',
           message: e.name,
@@ -207,12 +205,15 @@ const iterates: React.FC = () => {
   const [form] = Form.useForm();
 
   const showModal = (item) => {
-    form.setFieldsValue(item);
+    // 使用一个修改过的item对象，确保优化内容字段为空
+    const modifiedItem = {...item, optimization: ''};
+    setCurrentItem(item); // 记录当前点击的数据行
+    form.setFieldsValue(modifiedItem);
     setIsModalVisible(true);
     setCanSubmit(false);
   };
 
-  const {loading: aiDataLoading,run:handleOk}=useRequest(
+  const {loading: aiDataLoading, run: handleOk} = useRequest(
     async () => {
       try {
         // 触发表单验证
@@ -226,7 +227,7 @@ const iterates: React.FC = () => {
           UniversalSuccess();
           // @ts-ignore
           setIterateData(iterateData.map(item => {
-            if (item.id === currentItem.id) {
+            if (item.key === currentItem.key) {
               return {...item, remark: response.data};
             }
             return item;
@@ -266,7 +267,7 @@ const iterates: React.FC = () => {
 
   // 定义表单的底部按钮
   const colors1 = ['#40e495', '#30dd8a', '#2bb673'];
-  const colors2 = ['#85FFBD', '#FFFB7D', '#ef9d43'];
+  const colors2 = ['#85FFBD', '#FFFB7D'];
 
   const getHoverColors = (colors: string[]) =>
     colors.map((color) => new TinyColor(color).lighten(5).toString());
@@ -303,8 +304,9 @@ const iterates: React.FC = () => {
           },
         }}
       >
-        <Button type="primary" onClick={handleOk} disabled={!canSubmit} style={{marginLeft: '8px'}} loading={aiDataLoading}>
-          <MyIcon type="icon-rengongzhineng"/>确定
+        <Button type="primary" onClick={handleOk} disabled={!canSubmit} style={{marginLeft: '8px'}}
+                loading={aiDataLoading}>
+          <MyIcon type="icon-rengongzhineng"/>分析
         </Button>
       </ConfigProvider>
     </div>
@@ -417,14 +419,20 @@ const iterates: React.FC = () => {
           value: 'notEmpty',
         },
       ],
-      // filterMode: 'tree',
-      // filterSearch: true,
       onFilter: (value, record) => {
         if (value === 'notEmpty') {
           return !!record.remark; // 如果筛选值为非空值，则返回 remark 列不为空的行
         }
         return true;
       },
+      ellipsis: {
+        showTitle: false,
+      },
+      render: (remark) => (
+        <Tooltip placement="leftTop" title={remark} color='#E2B0FF' overlayClassName={styles.customTooltip}>
+          {remark}
+        </Tooltip>
+      ),
     }
   ];
 
