@@ -110,7 +110,7 @@ const notifications: React.FC = () => {
   const SatDetailSucces = () => {
     messageApi.open({
       type: 'success',
-      content: '详细数据下载完成！',
+      content: '详细数据加载完成！',
       icon: <MyIcon type="icon-success"/>,
     });
   }
@@ -202,9 +202,6 @@ const notifications: React.FC = () => {
     const endDate = dates[1].format("YYYY-MM-DD");
     return startDate === endDate ? startDate : `${startDate} -- ${endDate}`;
   };
-
-  // 模拟数据信息
-  const mockHrData = [{}];
 
   /**
    * API 调用处理

@@ -124,7 +124,7 @@ export async function querySatChat(params) {
 
 // 满意度详情
 export async function querySatDetail(params) {
-  const url = '/api/ivrIndex/querySatDetail';
+  const url = '/api/ivrIndex/querySatDetailNew';
   try {
     const response = await axios.post(url, params, {
       headers: {
