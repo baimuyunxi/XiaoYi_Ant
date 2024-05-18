@@ -205,6 +205,6 @@ const fakeChartData = (_: Request, res: Response) => {
   });
 };
 
-export default {
-  'GET  /api/fake_analysis_chart_data': fakeChartData,
-};
+// export default {
+//   'GET  /api/fake_analysis_chart_data': fakeChartData,
+// };

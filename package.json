@@ -7,7 +7,7 @@
     "analyze": "cross-env ANALYZE=1 max build",
     "build": "max build",
     "deploy": "npm run build && npm run gh-pages",
-    "dev": "npm run start:dev --port 714",
+    "dev": "npm run start:dev",
     "gh-pages": "gh-pages -d dist",
     "i18n-remove": "pro i18n-remove --locale=zh-CN --write",
     "postinstall": "max setup",
@@ -47,7 +47,9 @@
     "@umijs/route-utils": "^2.2.2",
     "antd": "^5.12.7",
     "antd-style": "^3.6.1",
+    "axios": "^1.6.8",
     "classnames": "^2.5.1",
+    "crypto-js": "^4.2.0",
     "dayjs": "^1.11.10",
     "numeral": "^2.0.6",
     "omit.js": "^2.0.2",
@@ -56,6 +58,7 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-fittext": "^1.0.0",
+    "react-highlight-words": "^0.20.0",
     "xlsx": "^0.18.5"
   },
   "devDependencies": {

@@ -1,6 +1,25 @@
-import {DownloadOutlined, FileSearchOutlined, PlusOutlined, RollbackOutlined, SearchOutlined} from '@ant-design/icons';
+import {
+  createFromIconfontCN,
+  DownloadOutlined,
+  FileSearchOutlined,
+  RollbackOutlined,
+  SearchOutlined
+} from '@ant-design/icons';
 import React, {useEffect, useLayoutEffect, useRef, useState} from 'react';
-import {Card, Col, DatePicker, Row, Space, Button, Table, Divider, ConfigProviderProps, Flex, message} from "antd";
+import Highlighter from 'react-highlight-words';
+import {
+  Card,
+  Col,
+  DatePicker,
+  Row,
+  Space,
+  Button,
+  Table,
+  Divider,
+  Flex,
+  message,
+  Input, notification
+} from "antd";
 import {PageContainer} from "@ant-design/pro-components";
 import moment from "moment";
 import useStyles from './style.style'
@@ -66,6 +85,61 @@ const createNewArr = (data, columnIndexes) => {
 };
 
 const notifications: React.FC = () => {
+  // 创建一个图标组件
+  const MyIcon = createFromIconfontCN({
+    scriptUrl: [
+      '//at.alicdn.com/t/c/font_4507680_6v6ettm44d.js',
+    ] // 在 iconfont.cn 上生成
+  });
+
+  // 消息提醒
+  const [messageApi, contextHolder] = message.useMessage();
+  const [notificatApi, contextHolder1] = notification.useNotification();
+
+  const WaitingAll = ()=>{
+    notificatApi.open({
+      type: 'warning',
+      message: '查询中...',
+      description: '非默认时间首次查询&&查询日期区间较大时，效率比较慢！请耐心等待！',
+      icon: <MyIcon type="icon-waiting"/>,
+      placement: 'bottomRight',
+      duration: 2
+    });
+  }
+
+  const SatDetailSucces = () => {
+    messageApi.open({
+      type: 'success',
+      content: '详细数据加载完成！',
+      icon: <MyIcon type="icon-success"/>,
+    });
+  }
+
+  const SatDetailErr = () => {
+    messageApi.open({
+      type: 'error',
+      content: '下载失败，返回数据不是有效的 Blob 对象！',
+      icon: <MyIcon type="icon-problem-solving"/>,
+    });
+  }
+
+  const UniversalSuccess = () => {
+    messageApi.open({
+      type: 'success',
+      content: '成功！',
+      icon: <MyIcon type="icon-email"/>,
+    });
+  }
+
+  const UniversalErr = () => {
+    messageApi.open({
+      type: 'error',
+      content: '失败！',
+      icon: <MyIcon type="icon-failed-fill"/>,
+    });
+  }
+
+
   // 自定义样式引用
   const {styles} = useStyles();
 
@@ -84,7 +158,20 @@ const notifications: React.FC = () => {
 
   const [loadingChat, setLoadingChat] = useState(false); // 表格加载状态定义
 
-  const [cachedData, setCachedData] = useState({data: null, date: null}); // 数据缓存
+  const [searchText, setSearchText] = useState('');
+  const [searchedColumn, setSearchedColumn] = useState('');
+  const searchInput = useRef(null);
+
+  const handleSearch = (selectedKeys, confirm, dataIndex) => {
+    confirm();
+    setSearchText(selectedKeys[0]);
+    setSearchedColumn(dataIndex);
+  };
+
+  const handleReset = clearFilters => {
+    clearFilters();
+    setSearchText('');
+  };
 
   // 禁用今天之后的日期
   const disabledDate = (current: moment.Moment) => {
@@ -116,9 +203,6 @@ const notifications: React.FC = () => {
     return startDate === endDate ? startDate : `${startDate} -- ${endDate}`;
   };
 
-  // 模拟数据信息
-  const mockHrData = [{}];
-
   /**
    * API 调用处理
    */
@@ -143,16 +227,23 @@ const notifications: React.FC = () => {
 
           // 处理API响应
           if (satisfactionResponse.code === '200') {
+            UniversalSuccess();
             const newData = createNewArr(satisfactionResponse.data, ["mydChannel", "mydContactPoint", "mydRemarks"]);
             setProcessedDataCombined(newData);
             // const processedData = createNewArr(mockHrData, ["hrSpecialArea", "hrRemarks"]);
 
           } else {
             console.error('获取数据失败:', satisfactionResponse.message);
-            message.error('获取满意度数据失败');
+            UniversalErr();
           }
         } catch (e) {
-          console.error("Error fetching data:", e)
+          notificatApi.open({
+            type: 'error',
+            message: e.name,
+            description: e.message,
+            icon: <MyIcon type="icon-shangchuancuowurizhi"/>,
+          });
+          console.error("Error fetching data:", e);
         }
       },
       {
@@ -455,97 +546,57 @@ const notifications: React.FC = () => {
     setCurrentCard(cardName);
   };
 
+  const getColumnSearchProps = dataIndex => ({
+    filterDropdown: ({setSelectedKeys, selectedKeys, confirm, clearFilters}) => (
+      <div style={{padding: 8}}>
+        <Input
+          ref={searchInput}
+          placeholder={`Search `}
+          value={selectedKeys[0]}
+          onChange={e => setSelectedKeys(e.target.value ? [e.target.value] : [])}
+          onPressEnter={() => handleSearch(selectedKeys, confirm, dataIndex)}
+          style={{marginBottom: 8, display: 'block'}}
+        />
+        <Button
+          type="primary"
+          onClick={() => handleSearch(selectedKeys, confirm, dataIndex)}
+          icon={<SearchOutlined/>}
+          size="small"
+          style={{width: 90, marginRight: 8}}
+        >
+          Search
+        </Button>
+        <Button
+          onClick={() => handleReset(clearFilters)}
+          size="small"
+          style={{width: 90}}
+        >
+          Reset
+        </Button>
+      </div>
+    ),
+    filterIcon: filtered => (
+      <SearchOutlined style={{color: filtered ? '#1890ff' : undefined}}/>
+    ),
+    onFilter: (value, record) =>
+      record[dataIndex] ? record[dataIndex].toString().toLowerCase().includes(value.toLowerCase()) : false,
+    render: text => searchedColumn === dataIndex && text ? (
+      <Highlighter
+        highlightStyle={{backgroundColor: '#ffc069', padding: 0}}
+        searchWords={[searchText]}
+        autoEscape
+        textToHighlight={text.toString()}
+      />
+    ) : (
+      text
+    ),
+  });
+
+
   /**
    * 满意度相关详情处理
    */
-    // 表头
-  const mydDetailTableHead = [
-      {
-        title: '场景',
-        dataIndex: "mydDetailSense",
-        align: "center",
-      },
-      {
-        title: '发送量',
-        children: [
-          {
-            title: '本期',
-            dataIndex: "mydDetailSendB",
-            align: "center",
-          },
-          {
-            title: '上期',
-            dataIndex: "mydDetailSendS",
-            align: "center",
-          },
-        ]
-      },
-      {
-        title: '参评率',
-        children: [
-          {
-            title: '本期',
-            dataIndex: "mydDetailParB",
-            align: "center",
-          },
-          {
-            title: '上期',
-            dataIndex: "mydDetailParS",
-            align: "center",
-          },
-        ]
-      },
-      {
-        title: '十分满意量',
-        dataIndex: "mydDetailVerySatQuan",
-        align: "center",
-      },
-      {
-        title: '满意量',
-        dataIndex: "mydDetailSatQuan",
-        align: "center",
-      },
-      {
-        title: '一般量',
-        dataIndex: "mydDetailGenQuan",
-        align: "center",
-      },
-      {
-        title: '不满意量',
-        dataIndex: "mydDetailDisQuan",
-        align: "center",
-      },
-      {
-        title: '满意率',
-        children: [
-          {
-            title: '本期',
-            dataIndex: "mydDetailSatRateB",
-            align: "center",
-          },
-          {
-            title: '上期',
-            dataIndex: "mydDetailSatRateS",
-            align: "center",
-          },
-        ]
-      },
-      {
-        title: "影响整体满意度",
-        dataIndex: "mydDetailEffect",
-        align: "center",
-        sorter: (a, b) => {
-          // 移除字符串中的百分号，并将其转换为浮点数
-          const aValue = parseFloat(a.mydDetailEffect.replace('%', ''));
-          const bValue = parseFloat(b.mydDetailEffect.replace('%', ''));
-
-          // 比较转换后的数值
-          return aValue - bValue;
-        },
-      }
-    ];
-
-  // 动态 Tab 切换 Table 数据
+    // 动态 Tab 切换 Table 数据
   const [selectedTabKey, mydSetSelectedTabKey] = useState('mydOverall');
   let mydTableData;
   switch (selectedTabKey) {
@@ -562,6 +613,108 @@ const notifications: React.FC = () => {
       mydTableData = [];
   }
 
+  // 表头
+  const mydDetailTableHead = [
+    {
+      title: '场景',
+      dataIndex: "mydDetailSense",
+      align: "center",
+      ...getColumnSearchProps('mydDetailSense'),
+    },
+    selectedTabKey === 'mydOverall' && {
+      title: "命中量",
+      dataIndex: "mydHitQuantity",
+      align: "center",
+      width: 80,
+      sorter: (a, b) => {
+        // 移除字符串中的百分号，并将其转换为浮点数
+        const aValue = parseFloat(a.mydHitQuantity);
+        const bValue = parseFloat(b.mydHitQuantity);
+        // 比较转换后的数值
+        return aValue - bValue;
+      },
+    },
+    {
+      title: '发送量',
+      children: [
+        {
+          title: '本期',
+          dataIndex: "mydDetailSendB",
+          align: "center",
+        },
+        {
+          title: '上期',
+          dataIndex: "mydDetailSendS",
+          align: "center",
+        },
+      ]
+    },
+    {
+      title: '参评率',
+      children: [
+        {
+          title: '本期',
+          dataIndex: "mydDetailParB",
+          align: "center",
+        },
+        {
+          title: '上期',
+          dataIndex: "mydDetailParS",
+          align: "center",
+        },
+      ]
+    },
+    {
+      title: '十分满意量',
+      dataIndex: "mydDetailVerySatQuan",
+      align: "center",
+    },
+    {
+      title: '满意量',
+      dataIndex: "mydDetailSatQuan",
+      align: "center",
+    },
+    {
+      title: '一般量',
+      dataIndex: "mydDetailGenQuan",
+      align: "center",
+    },
+    {
+      title: '不满意量',
+      dataIndex: "mydDetailDisQuan",
+      align: "center",
+    },
+    {
+      title: '满意率',
+      children: [
+        {
+          title: '本期',
+          dataIndex: "mydDetailSatRateB",
+          align: "center",
+        },
+        {
+          title: '上期',
+          dataIndex: "mydDetailSatRateS",
+          align: "center",
+        },
+      ]
+    },
+    {
+      title: "影响整体满意度",
+      dataIndex: "mydDetailEffect",
+      align: "center",
+      sorter: (a, b) => {
+        // 移除字符串中的百分号，并将其转换为浮点数
+        const aValue = parseFloat(a.mydDetailEffect.replace('%', ''));
+        const bValue = parseFloat(b.mydDetailEffect.replace('%', ''));
+
+        // 比较转换后的数值
+        return aValue - bValue;
+      },
+    }
+  ].filter(Boolean);
+
+
   /**
    * 呼入相关详情处理
    */
@@ -571,6 +724,7 @@ const notifications: React.FC = () => {
         title: '场景',
         dataIndex: "hrDetailSense",
         align: "center",
+        ...getColumnSearchProps('hrDetailSense'),
       },
       {
         title: '命中量',
@@ -657,6 +811,7 @@ const notifications: React.FC = () => {
 
       // 根据当前展示的模块和 Tab 调用相应的 API
       if (currentCard === 'callVolume') {
+        WaitingAll();
         switch (hrselectedTabKey) {
           case 'rgSense':
             const senseResponse = await queryCallSense(params);
@@ -672,25 +827,28 @@ const notifications: React.FC = () => {
             break;
         }
       } else if (currentCard === 'satisfaction') {
+        WaitingAll();
         switch (selectedTabKey) {
           case 'mydOverall':
             const overallResponse = await querySatOverall(params);
             // TODO: 处理响应数据
             if (overallResponse.code === '200') {
+              UniversalSuccess();
               setMydOverallData(overallResponse.data);
             } else {
               console.error('获取数据失败:', overallResponse.message);
-              message.error('获取满意度数据失败');
+              UniversalErr();
             }
             break;
           case 'mydSms':
             const mesResponse = await querySatMes(params);
             // TODO: 处理响应数据
             if (mesResponse.code === '200') {
+              UniversalSuccess();
               setMydMessageData(mesResponse.data);
             } else {
               console.error('获取数据失败:', mesResponse.message);
-              message.error('获取满意度数据失败');
+              UniversalErr();
             }
             break;
           case 'mydWechat':
@@ -698,10 +856,11 @@ const notifications: React.FC = () => {
             // TODO: 处理响应数据
             // 处理API响应
             if (chatResponse.code === '200') {
+              UniversalSuccess();
               setMydChatData(chatResponse.data);
             } else {
               console.error('获取数据失败:', chatResponse.message);
-              message.error('获取满意度数据失败');
+              UniversalErr();
             }
             break;
         }
@@ -714,34 +873,70 @@ const notifications: React.FC = () => {
 
 
   // 下载处理
-  const handleDetailClick = async () => {
+  const {loading: handleDetailClickLoading, run: handleDetailClick,} = useRequest(async () => {
+    console.log("Request started, current loading state:", handleDetailClickLoading);
     const params = {
       day_ids: dates[0].format("YYYY-MM-DD HH:mm:ss"),
       day_ide: dates[1].format("YYYY-MM-DD HH:mm:ss"),
-      last_day_ids: comparisonDates?.[0].format("YYYY-MM-DD HH:mm:ss"),
-      last_day_ide: comparisonDates?.[1].format("YYYY-MM-DD HH:mm:ss"),
+      last_day_ids: comparisonDates?.[0]?.format("YYYY-MM-DD HH:mm:ss"),
+      last_day_ide: comparisonDates?.[1]?.format("YYYY-MM-DD HH:mm:ss"),
     };
+    WaitingAll();
 
+    try {
+      let response;
+      if (currentCard === 'callVolume') {
+        switch (selectedTabKey) {
+          case 'rgSense':
+            response = await queryCallSenseDetail(params);
+            break;
+          case 'rgActive':
+            response = await queryCallInitiativeDetail(params);
+            break;
+          case 'rgRejection':
+            response = await queryCallRejectionDetail(params);
+            break;
+        }
+        // Handle response data
+      } else if (currentCard === 'satisfaction') {
+        response = await querySatDetail(params);
+        if (response.data instanceof Blob) {
+          const url = window.URL.createObjectURL(response.data);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = response.filename; // Use the filename from the backend
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          window.URL.revokeObjectURL(url);
+          SatDetailSucces();
+        } else {
+          SatDetailErr();
+          console.error('返回的数据类型不是 Blob:', response.data);
+          throw new Error('Data is not a Blob');
+        }
+      }
+    } catch (error) {
+      console.error('Error during API call:', error);
+      notificatApi.open({
+        type: 'error',
+        message: error.name,
+        description: error.message,
+        icon: <MyIcon type="icon-shangchuancuowurizhi"/>,
+      });
+    }
+  });
 
-    if (currentCard === 'callVolume' && hrselectedTabKey === 'rgSense') {
-      const detailResponse = await queryCallSenseDetail(params);
-      // TODO: 处理响应数据
-    } else if (currentCard === 'callVolume' && hrselectedTabKey === 'rgActive') {
-      const detailResponse = await queryCallInitiativeDetail(params);
-      // TODO: 处理响应数据
-    } else if (currentCard === 'callVolume' && hrselectedTabKey === 'rgRejection') {
-      const detailResponse = await queryCallRejectionDetail(params);
-      // TODO: 处理响应数据
-    }
-    // 对于满意度详情，不区分当前是整体/短信/微信
-    else if (currentCard === 'satisfaction') {
-      const satDetailResponse = await querySatDetail(params);
-      // TODO: 处理响应数据
-    }
+  // 组合点击事件函数
+  const handleButtonClick = async () => {
+    await handleDetailClick(); // 然后执行数据下载操作
   };
+
 
   return (
     <PageContainer>
+      {contextHolder}
+      {contextHolder1}
       <Card title="时间选择">
         <Space direction='vertical' size={12}>
           <Row align={"middle"} gutter={16} wrap={false}>
@@ -830,18 +1025,21 @@ const notifications: React.FC = () => {
                 icon={<DownloadOutlined/>}
                 onClick={exportToExcelCallVolume}
               />
-              <Button
-                type="primary"
-                shape="round"
-                icon={<FileSearchOutlined/>}
-                onClick={handleDetailClick}
-              >
-                详情
-              </Button>
+              <>
+                <Button
+                  type="primary"
+                  shape="round"
+                  icon={<FileSearchOutlined/>}
+                  onClick={handleButtonClick}
+                >
+                  详情
+                </Button>
+              </>
             </Space>
           }
         >
-          <Table columns={hrDetailTableHead} dataSource={hrTableData}/>
+          <Table bordered={true} size={"middle"} columns={hrDetailTableHead} dataSource={hrTableData}
+                 pagination={{defaultPageSize: 20}} scroll={{y: 300}}/>
         </Card>
       )}
 
@@ -864,18 +1062,23 @@ const notifications: React.FC = () => {
                 onClick={exportToExcelSatisfaction}
                 loading={setExportToExcelSat}
               />
-              <Button
-                type="primary"
-                shape="round"
-                icon={<FileSearchOutlined/>}
-                onClick={handleDetailClick}
-              >
-                详情
-              </Button>
+              <>
+                {contextHolder}
+                <Button
+                  type="primary"
+                  shape="round"
+                  icon={<FileSearchOutlined/>}
+                  onClick={handleButtonClick}
+                  loading={handleDetailClickLoading}
+                >
+                  详情
+                </Button>
+              </>
             </Space>
           }
         >
-          <Table columns={mydDetailTableHead} dataSource={mydTableData} loading={loadingChat}/>
+          <Table bordered={true} size={"middle"} columns={mydDetailTableHead} dataSource={mydTableData}
+                 loading={loadingChat} pagination={{defaultPageSize: 20}} scroll={{y: 300}}/>
         </Card>
       )}
       {/*日报卡片*/}
@@ -893,10 +1096,10 @@ const notifications: React.FC = () => {
           </Row>
           <Divider/>
           <Table columns={hrDataColumns} dataSource={processedData} bordered={true} pagination={false}
-                 size={"small"} title={() => <h3>呼叫量数据</h3>} loading={searchDataLoading}/>
+                 size={"middle"} title={() => <h3>呼叫量数据</h3>} loading={searchDataLoading}/>
           <Divider/>
           <Table columns={mydDataColumns} dataSource={processedDataCombined} bordered={true} pagination={false}
-                 size={"small"} title={() => <h3>满意度数据</h3>} loading={searchDataLoading}/>
+                 size={"middle"} title={() => <h3>满意度数据</h3>} loading={searchDataLoading}/>
         </Card>
       )}
     </PageContainer>

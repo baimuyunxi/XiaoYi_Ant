@@ -11,38 +11,38 @@
  * @doc https://umijs.org/docs/guides/routes
  */
 export default [
-  // {
-  //   path: '/user',
-  //   layout: false,
-  //   routes: [
-  //     {
-  //       path: '/user/login',
-  //       layout: false,
-  //       name: 'login',
-  //       component: './user/login',
-  //     },
-  //     {
-  //       path: '/user',
-  //       redirect: '/user/login',
-  //     },
-  //     {
-  //       name: 'register-result',
-  //       icon: 'smile',
-  //       path: '/user/register-result',
-  //       component: './user/register-result',
-  //     },
-  //     {
-  //       name: 'register',
-  //       icon: 'smile',
-  //       path: '/user/register',
-  //       component: './user/register',
-  //     },
-  //     {
-  //       component: '404',
-  //       path: '/user',
-  //     },
-  //   ],
-  // },
+  {
+    path: '/user',
+    layout: false,
+    routes: [
+      {
+        path: '/user/login',
+        layout: false,
+        name: 'login',
+        component: './user/login',
+      },
+      {
+        path: '/user',
+        redirect: '/user/login',
+      },
+      {
+        name: 'register-result',
+        icon: 'smile',
+        path: '/user/register-result',
+        component: './user/register-result',
+      },
+      {
+        name: 'register',
+        icon: 'smile',
+        path: '/user/register',
+        component: './user/register',
+      },
+      {
+        component: '404',
+        path: '/user',
+      },
+    ],
+  },
   {
     path: '/dashboard',
     name: 'dashboard',
@@ -64,12 +64,6 @@ export default [
         path: '/dashboard/monitor',
         component: './dashboard/monitor',
       },
-      // {
-      //   name: 'workplace',
-      //   icon: 'smile',
-      //   path: '/dashboard/workplace',
-      //   component: './dashboard/workplace',
-      // },
     ],
   },
   {
@@ -87,60 +81,91 @@ export default [
         path:'/ivr-Index/notifications',
         component: './ivr-Index/notifications',
       },
+      {
+        name:'xiaoYiIterate',
+        icon:'MergeOutlined',
+        path: '/ivr-Index/xiaoYiIterate',
+        component: './ivr-Index/xiaoYiIterate',
+      },
     ]
   },
   {
-    path: '/list',
-    icon: 'table',
-    name: 'list',
+    path: '/differentiation',
+    icon: 'SlidersOutlined',
+    name:'differentiation',
     routes: [
       {
-        path: '/list',
-        redirect: '/list/table-list',
+        path: '/differentiation',
+        redirect: '/differentiation/report-form'
       },
       {
-        name: 'table-list',
-        icon: 'smile',
-        path: '/list/table-list',
-        component: './table-list',
+        name:'report-form' ,
+        icon: 'AreaChartOutlined',
+        path:'/differentiation/report-form',
+        component: './differentiation/report-form',
       },
-      // {
-      //   name: 'basic-list',
-      //   icon: 'smile',
-      //   path: '/list/basic-list',
-      //   component: './list/basic-list',
-      // },
-      // {
-      //   name: 'card-list',
-      //   icon: 'smile',
-      //   path: '/list/card-list',
-      //   component: './list/card-list',
-      // },
-    ],
+      {
+        name:'configuration',
+        icon:'ToolOutlined',
+        path: '/differentiation/configuration',
+        component: './differentiation/configuration',
+        access: 'canAdmin'
+      },
+    ]
+
   },
-  {
-    path: '/profile',
-    name: 'profile',
-    icon: 'profile',
-    routes: [
-      {
-        path: '/profile',
-        redirect: '/profile/basic',
-      },
-      {
-        name: 'basic',
-        icon: 'smile',
-        path: '/profile/basic',
-        component: './profile/basic',
-      },
-      {
-        name: 'advanced',
-        icon: 'smile',
-        path: '/profile/advanced',
-        component: './profile/advanced',
-      },
-    ],
-  },
+  // {
+  //   path: '/list',
+  //   icon: 'table',
+  //   name: 'list',
+  //   routes: [
+  //     {
+  //       path: '/list',
+  //       redirect: '/list/table-list',
+  //     },
+  //     {
+  //       name: 'table-list',
+  //       icon: 'smile',
+  //       path: '/list/table-list',
+  //       component: './table-list',
+  //     },
+  //     // {
+  //     //   name: 'basic-list',
+  //     //   icon: 'smile',
+  //     //   path: '/list/basic-list',
+  //     //   component: './list/basic-list',
+  //     // },
+  //     // {
+  //     //   name: 'card-list',
+  //     //   icon: 'smile',
+  //     //   path: '/list/card-list',
+  //     //   component: './list/card-list',
+  //     // },
+  //   ],
+  // },
+  // {
+  //   path: '/profile',
+  //   name: 'profile',
+  //   icon: 'profile',
+  //   routes: [
+  //     {
+  //       path: '/profile',
+  //       redirect: '/profile/basic',
+  //     },
+  //     {
+  //       name: 'basic',
+  //       icon: 'smile',
+  //       path: '/profile/basic',
+  //       component: './profile/basic',
+  //     },
+  //     {
+  //       name: 'advanced',
+  //       icon: 'smile',
+  //       path: '/profile/advanced',
+  //       component: './profile/advanced',
+  //     },
+  //   ],
+  // },
   // {
   //   name: 'result',
   //   icon: 'CheckCircleOutlined',
@@ -164,35 +189,35 @@ export default [
   //     },
   //   ],
   // },
-  {
-    name: 'account',
-    icon: 'user',
-    path: '/account',
-    routes: [
-      {
-        path: '/account',
-        redirect: '/account/center',
-      },
-      {
-        name: 'center',
-        icon: 'smile',
-        path: '/account/center',
-        component: './account/center',
-      },
-      {
-        name: 'settings',
-        icon: 'smile',
-        path: '/account/settings',
-        component: './account/settings',
-      },
-    ],
-  },
+  // {
+  //   name: 'account',
+  //   icon: 'user',
+  //   path: '/account',
+  //   routes: [
+  //     {
+  //       path: '/account',
+  //       redirect: '/account/center',
+  //     },
+  //     {
+  //       name: 'center',
+  //       icon: 'smile',
+  //       path: '/account/center',
+  //       component: './account/center',
+  //     },
+  //     {
+  //       name: 'settings',
+  //       icon: 'smile',
+  //       path: '/account/settings',
+  //       component: './account/settings',
+  //     },
+  //   ],
+  // },
   {
     path: '/',
     redirect: '/dashboard/analysis',
   },
-  // {
-  //   component: '404',
-  //   path: '*',
-  // },
+  {
+    component: '404',
+    path: '/*',
+  },
 ];
