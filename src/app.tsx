@@ -23,8 +23,7 @@ export async function getInitialState(): Promise<{
   const fetchUserInfo = async () => {
     try {
       const msg = await queryCurrentUser({
-        // skipErrorHandler: true,
-        loginPath,
+        skipErrorHandler: true,
       });
       return msg.data;
     } catch (error) {

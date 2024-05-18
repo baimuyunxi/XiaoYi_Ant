@@ -117,8 +117,16 @@ const Login: React.FC = () => {
 
   const handleSubmit = async (values: API.LoginParams) => {
     try {
-      // AES加密密码
-      const encryptedPassword = CryptoJS.AES.encrypt(values.password, 'yunxi').toString();
+      // AES加密密码，使用CBC模式和随机IV
+      const key = CryptoJS.enc.Utf8.parse('x');
+      const iv = CryptoJS.lib.WordArray.random(16);
+      const encrypted = CryptoJS.AES.encrypt(values.password, key, {
+        iv: iv,
+        mode: CryptoJS.mode.CBC,
+        padding: CryptoJS.pad.Pkcs7,
+      });
+
+      const encryptedPassword = iv.concat(encrypted.ciphertext).toString(CryptoJS.enc.Base64);
       const encryptedValues = {...values, password: encryptedPassword};
 
       // 登录
