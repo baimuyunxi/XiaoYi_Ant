@@ -1,10 +1,14 @@
-import { Area } from '@ant-design/plots';
-import { Statistic } from 'antd';
-import { useEffect, useRef, useState } from 'react';
+import {Area} from '@ant-design/plots';
+import {Col, Divider, Space, Statistic} from 'antd';
+import React, {useEffect, useRef, useState} from 'react';
 import useStyles from './index.style';
+import numeral from 'numeral';
+import Field from './Field';
+
 function fixedZero(val: number) {
   return val * 1 < 10 ? `0${val}` : val;
 }
+
 function getActiveData() {
   const activeData = [];
   for (let i = 0; i < 24; i += 1) {
@@ -19,7 +23,7 @@ function getActiveData() {
 const ActiveChart = () => {
   const timerRef = useRef<number | null>(null);
   const requestRef = useRef<number | null>(null);
-  const { styles } = useStyles();
+  const {styles} = useStyles();
   const [activeData, setActiveData] = useState<{ x: string; y: number }[]>([]);
   const loopData = () => {
     requestRef.current = requestAnimationFrame(() => {
@@ -42,10 +46,10 @@ const ActiveChart = () => {
 
   return (
     <div className={styles.activeChart}>
-      <Statistic title="目标评估" value="有望达到预期" />
+      <Field label="异常挂机" value={''}/>
       <div
         style={{
-          marginTop: 32,
+          marginTop: 0,
         }}
       >
         <Area
@@ -54,31 +58,16 @@ const ActiveChart = () => {
           axis={false}
           yField="y"
           height={84}
-          style={{ fill: 'linear-gradient(-90deg, white 0%, #6294FA 100%)', fillOpacity: 0.6 }}
+          style={{fill: 'linear-gradient(-90deg, white 0%, #6294FA 100%)', fillOpacity: 0.6}}
           data={activeData}
         />
       </div>
-      {activeData && (
-        <div>
-          <div className={styles.activeChartGrid}>
-            <p>{[...activeData].sort()[activeData.length - 1]?.y + 200} 亿元</p>
-            <p>{[...activeData].sort()[Math.floor(activeData.length / 2)]?.y} 亿元</p>
-          </div>
-          <div className={styles.dashedLine}>
-            <div className={styles.line} />
-          </div>
-          <div className={styles.dashedLine}>
-            <div className={styles.line} />
-          </div>
-        </div>
-      )}
-      {activeData && (
-        <div className={styles.activeChartLegend}>
-          <span>00:00</span>
-          <span>{activeData[Math.floor(activeData.length / 2)]?.x}</span>
-          <span>{activeData[activeData.length - 1]?.x}</span>
-        </div>
-      )}
+      <Divider/>
+      <div>
+        <Field label="场景兜底" value={''}/>
+        <div style={{marginTop: 9,}}/>
+        <Field label="兜底量" value={numeral(1234).format('0,0')}/>
+      </div>
     </div>
   );
 };

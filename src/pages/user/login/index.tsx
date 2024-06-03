@@ -72,7 +72,7 @@ const Login: React.FC = () => {
   const handleSubmit = async (values: API.LoginParams) => {
     try {
       // AES加密密码，使用CBC模式和随机IV
-      const key = CryptoJS.enc.Utf8.parse('x');
+      const key = CryptoJS.enc.Utf8.parse('13140BaiMuYunXi+2000080620000714');
       const iv = CryptoJS.lib.WordArray.random(16);
       const encrypted = CryptoJS.AES.encrypt(values.password, key, {
         iv: iv,
@@ -92,6 +92,8 @@ const Login: React.FC = () => {
         });
         message.success(defaultLoginSuccessMessage);
         await fetchUserInfo();
+        // 存储 token
+        localStorage.setItem('token', msg.token);
         const urlParams = new URL(window.location.href).searchParams;
         window.location.href = urlParams.get('redirect') || '/';
         return;
