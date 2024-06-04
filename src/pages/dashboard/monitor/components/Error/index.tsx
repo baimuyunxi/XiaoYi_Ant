@@ -1,6 +1,8 @@
 import React, {useEffect, useRef} from 'react';
-import {Column} from '@antv/g2plot';
-import {Tooltip} from "antd";
+import {Line} from '@antv/g2plot';
+import {Col, Row, Statistic, Tooltip} from "antd";
+import useStyles from "@/pages/dashboard/monitor/style.style";
+import numeral from "numeral";
 
 const generateRandomData = () => {
   const types = ['拒识', '超时', '按键错误', '超时&按键错误 >=4'];
@@ -26,21 +28,22 @@ const generateRandomData = () => {
   return data;
 };
 
-const ColumnChart = () => {
+const LineChart = () => {
   const containerRef = useRef(null);
+  const {styles} = useStyles();
 
   useEffect(() => {
     const data = generateRandomData();
-    const column = new Column(containerRef.current, {
+    const totalDataPoints = data.length / 4; // 每种类型的时间点数量
+    const visibleDataPoints = 11;
+    const start = (totalDataPoints - visibleDataPoints) / totalDataPoints;
+    const linePlot = new Line(containerRef.current, {
       data,
       xField: 'year',
       yField: 'value',
       seriesField: 'type',
-      isGroup: true,
-      columnStyle: {
-        radius: [20, 20, 0, 0],
-      },
-      color: ({ type }) => {
+      smooth: true,
+      color: ({type}) => {
         // Define colors for each type
         const colors = {
           '拒识': '#FBE7C6',
@@ -55,21 +58,56 @@ const ColumnChart = () => {
           autoRotate: false,
         },
       },
+      yAxis: {
+        label: {
+          formatter: (v) => (typeof v === 'number' ? v.toFixed(1) : v),
+        },
+      },
+      legend: {
+        position: 'top',
+      },
+      animation: {
+        appear: {
+          animation: 'path-in',
+          duration: 1000,
+        },
+      },
       slider: {
-        start: 0.95,
+        start,
         end: 1,
       },
     });
 
-    column.render();
+    linePlot.render();
     return () => {
-      column.destroy();
+      linePlot.destroy();
     };
   }, []);
 
-
-  return <div ref={containerRef} style={{width: '100%', height: '100%'}}/>;
+  return (
+    <>
+      <Row>
+        <Col md={6} sm={12} xs={24}>
+          <Statistic
+            title="异常超时总量"
+            suffix="次"
+            value={numeral(12233).format('0,0')}
+          />
+        </Col>
+        <Col md={6} sm={12} xs={24}>
+          <Statistic title="异常按键错误" value={numeral(1233).format('0,0')} suffix="次"/>
+        </Col>
+        <Col md={6} sm={12} xs={24}>
+          <Statistic title="异常拒识" value={numeral(2233).format('0,0')} suffix="次"/>
+        </Col>
+        <Col md={6} sm={12} xs={24}>
+          <Statistic title="异常超时&拒识(>=7)" suffix="次" value={numeral(234).format('0,0')}/>
+        </Col>
+      </Row>
+      <div className={styles.mapChart}>
+        <div ref={containerRef} style={{width: '100%', height: '100%'}}/>
+      </div>
+    </>);
 };
 
-
-export default ColumnChart;
+export default LineChart;

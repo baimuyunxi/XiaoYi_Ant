@@ -30,7 +30,7 @@ const ActiveChart = () => {
       timerRef.current = window.setTimeout(() => {
         setActiveData(getActiveData());
         loopData();
-      }, 2000);
+      }, 12000);
     });
   };
 
