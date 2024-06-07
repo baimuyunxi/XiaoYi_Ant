@@ -1,74 +1,134 @@
-import {Area} from '@ant-design/plots';
-import {Col, Divider, Space, Statistic} from 'antd';
 import React, {useEffect, useRef, useState} from 'react';
-import useStyles from './index.style';
-import numeral from 'numeral';
-import Field from './Field';
+import {Area} from '@antv/g2plot';
+import {Col, Divider, Row, Statistic, Table} from "antd";
+import numeral from "numeral";
+import useStyles from "@/pages/dashboard/monitor/style.style";
 
-function fixedZero(val: number) {
-  return val * 1 < 10 ? `0${val}` : val;
-}
+const generateRandomData = () => {
+  const types = ['异常挂机'];
+  const startTime = new Date();
+  startTime.setHours(0, 0, 0, 0);
+  const endTime = new Date();
+  const interval = 10 * 60 * 1000; // 10 minutes in milliseconds
 
-function getActiveData() {
-  const activeData = [];
-  for (let i = 0; i < 24; i += 1) {
-    activeData.push({
-      x: `${fixedZero(i)}:00`,
-      y: Math.floor(Math.random() * 200) + i * 50,
+  const data = [];
+
+  for (let time = startTime.getTime(); time <= endTime.getTime(); time += interval) {
+    const current = new Date(time);
+    const timeString = current.toTimeString().slice(0, 8); // Format time as HH:MM:SS
+    types.forEach(type => {
+      data.push({
+        year: timeString,
+        value: parseFloat((Math.random() * 10 + 3).toFixed(1)), // Generates random value between 3 and 13
+        type,
+      });
     });
   }
-  return activeData;
-}
+
+  return data;
+};
+
+const calculateMaxTotalValue = (data) => {
+  const groupedByYear = data.reduce((acc, curr) => {
+    if (!acc[curr.year]) {
+      acc[curr.year] = 0;
+    }
+    acc[curr.year] += curr.value;
+    return acc;
+  }, {});
+
+  return Math.max(...Object.values(groupedByYear));
+};
 
 const ActiveChart = () => {
-  const timerRef = useRef<number | null>(null);
-  const requestRef = useRef<number | null>(null);
   const {styles} = useStyles();
-  const [activeData, setActiveData] = useState<{ x: string; y: number }[]>([]);
-  const loopData = () => {
-    requestRef.current = requestAnimationFrame(() => {
-      timerRef.current = window.setTimeout(() => {
-        setActiveData(getActiveData());
-        loopData();
-      }, 12000);
-    });
-  };
+  const containerRef = useRef(null);
+  const [chart, setChart] = useState(null);
 
   useEffect(() => {
-    loopData();
+    const data = generateRandomData();
+    const totalDataPoints = data.length; // 每种类型的时间点数量
+    const visibleDataPoints = 11;
+    const start = (totalDataPoints - visibleDataPoints) / totalDataPoints;
+    calculateMaxTotalValue(data);
+
+    const areaPlot = new Area(containerRef.current, {
+      data,
+      isStack: true,
+      xField: 'year',
+      yField: 'value',
+      seriesField: 'type',
+      interactions: [{type: 'active-region', enable: false}],
+      slider: {
+        start,
+        end: 1,
+      },
+      // color: ({type}) => {
+      //   // Define colors for each type
+      //   const colors = {
+      //     '失败': '#FFCCCC',
+      //     '为N': '#80a4c9',
+      //   };
+      //   return colors[type];
+      // },
+    });
+
+    areaPlot.render();
+    setChart(areaPlot);
+
+    // Cleanup function
     return () => {
-      clearTimeout(timerRef.current!);
-      if (requestRef.current) {
-        cancelAnimationFrame(requestRef.current);
+      if (chart) {
+        chart.destroy();
       }
     };
   }, []);
 
+  const columns = [{
+    title: '名称',
+    dataIndex: 'name',
+  }, {
+    title: '数量',
+    dataIndex: 'name',
+  },
+  ]
+
   return (
-    <div className={styles.activeChart}>
-      <Field label="异常挂机" value={''}/>
-      <div
-        style={{
-          marginTop: 0,
-        }}
-      >
-        <Area
-          padding={[0, 0, 0, 0]}
-          xField="x"
-          axis={false}
-          yField="y"
-          height={84}
-          style={{fill: 'linear-gradient(-90deg, white 0%, #6294FA 100%)', fillOpacity: 0.6}}
-          data={activeData}
-        />
-      </div>
-      <Divider/>
-      <div>
-        <Field label="场景兜底" value={''}/>
-        <div style={{marginTop: 9,}}/>
-        <Field label="兜底量" value={numeral(1234).format('0,0')}/>
-      </div>
-    </div>
+    <>
+      <Row gutter={24}>
+        <Col
+          xl={16}
+          lg={16}
+          md={24}
+          sm={24}
+          xs={24}
+          style={{
+            marginBottom: 24,
+          }}
+        >
+          <div className={styles.mapChart}>
+            <div ref={containerRef} style={{width: '100%', height: '100%'}}/>
+          </div>
+        </Col>
+        <Col
+          xl={8}
+          lg={16}
+          md={24}
+          sm={24}
+          xs={24}
+          style={{
+            marginBottom: 24,
+          }}
+        >
+          <div className={styles.mapChart}>
+            <Statistic title={'异常总量'} value={numeral(6662177).format('0,0')} suffix={'通'}/>
+            <Divider/>
+            <h4>场景兜底</h4>
+            <Table columns={columns} dataSource={''} scroll={{y: 440}} bordered={true}/>
+          </div>
+        </Col>
+      </Row>
+    </>
   );
 };
 

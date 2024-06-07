@@ -89,7 +89,7 @@ const LineChart = () => {
       <Row>
         <Col md={6} sm={12} xs={24}>
           <Statistic
-            title="异常超时总量"
+            title="异常超时"
             suffix="次"
             value={numeral(12233).format('0,0')}
           />

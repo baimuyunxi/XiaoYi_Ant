@@ -1,13 +1,13 @@
-import React, { useEffect, useRef } from 'react';
-import { Bar } from '@antv/g2plot';
+import React, {useEffect, useRef} from 'react';
+import {Bar} from '@antv/g2plot';
 
 const DemoBar = () => {
   const containerRef = useRef(null);
 
   useEffect(() => {
     const data = [
-      { action: '10000转人工异常', value: 56 },
-      { action: '10001转人工异常', value: 18 },
+      {action: '10000转人工异常', value: 56},
+      {action: '10001转人工异常', value: 18},
     ];
 
     // Helper function to insert line breaks and center text
@@ -39,12 +39,16 @@ const DemoBar = () => {
           fontSize: 14,
         },
       },
+      barStyle: {
+        radius: [23, 23, 0, 0],
+      },
+      color: '#03AED2',
     });
 
     barPlot.render();
   }, []);
 
-  return <div ref={containerRef} style={{ width: '100%', height: '180px' }} />;
+  return <div ref={containerRef} style={{width: '100%', height: '180px'}}/>;
 };
 
 export default DemoBar;
