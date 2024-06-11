@@ -1,8 +1,10 @@
-import {InfoCircleOutlined} from '@ant-design/icons';
+import {InfoCircleOutlined, NotificationOutlined} from '@ant-design/icons';
 import {Area, Column, Line} from '@ant-design/plots';
-import {Col, Progress, Row, Tooltip} from 'antd';
+import {Alert, Col, Progress, Row, Tooltip} from 'antd';
 import numeral from 'numeral';
 import {ChartCard, Field} from './Charts';
+import Marquee from "react-fast-marquee";
+import {AlertProps} from "antd/es/alert/Alert";
 
 const topColResponsiveProps = {
   xs: 24,
@@ -23,8 +25,8 @@ const generateRandomData = () => {
   const interval = 10 * 60 * 1000; // 10 minutes in milliseconds
 
   const data: {
-      time: string; value: number; // Generates random value between 3 and 13
-      type: string;
+    time: string; value: number; // Generates random value between 3 and 13
+    type: string;
   }[] = [];
 
   for (let time = startTime.getTime(); time <= endTime.getTime(); time += interval) {
@@ -45,9 +47,34 @@ const generateRandomData = () => {
 const IntroduceRow = () => {
 
   const data = generateRandomData().slice(-36); // 选择最后36条数据
+  const starttime = '12:00';
+  const rgendtime = '10:00';
 
   return (
     <Row gutter={24}>
+      <Col
+        xl={24}
+        lg={24}
+        md={24}
+        sm={24}
+        style={{
+          marginBottom: 12,
+        }}
+      >
+        <Alert
+          banner={true}
+          icon={<NotificationOutlined />}
+          closable
+          style={{borderRadius: '23px', backgroundColor: '#bff18f'}}
+          message={
+            <Marquee pauseOnHover gradient={false}>
+              当前整体数据截止时间&nbsp;<span
+              style={{color: 'red', fontWeight: 'bold'}}>{starttime}</span>&nbsp;，人工相关数据截止时间&nbsp;<span
+              style={{color: 'red', fontWeight: 'bold'}}>{rgendtime}</span>&nbsp;。
+            </Marquee>
+          }
+        />
+      </Col>
       <Col {...topColResponsiveProps}>
         <ChartCard
           bordered={false}
@@ -58,7 +85,7 @@ const IntroduceRow = () => {
             </Tooltip>
           }
           total={() => 126560}
-          footer={<Field label="当前数据统计截止时间:" value={<span style={{color: 'red'}}><b>12:00</b></span>}/>}
+          footer={<Field label="" value={''}/>}
           contentHeight={46}
         >
           <Line

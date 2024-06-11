@@ -66,7 +66,7 @@ const Analysis: FC<AnalysisProps> = () => {
               title="交互异常"
               style={{
                 marginBottom: 24,
-                marginTop:4
+                marginTop: 4
               }}
               bordered={false}
             >
