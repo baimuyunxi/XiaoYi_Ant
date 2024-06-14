@@ -4,7 +4,6 @@ import {Alert, Col, Progress, Row, Tooltip} from 'antd';
 import numeral from 'numeral';
 import {ChartCard, Field} from './Charts';
 import Marquee from "react-fast-marquee";
-import {AlertProps} from "antd/es/alert/Alert";
 
 const topColResponsiveProps = {
   xs: 24,
@@ -171,7 +170,20 @@ const IntroduceRow = () => {
           footer={<Field label="接通率" value={'78%'}/>}
           contentHeight={46}
         >
-          <Progress percent={78} strokeColor={{from: '#108ee9', to: '#87d068'}} status="active"/>
+          <Area
+            xField="time"
+            yField="value"
+            shapeField="smooth"
+            height={46}
+            axis={false}
+            style={{
+              fill: 'linear-gradient(-90deg, #FBAB7E 0%, #F7CE68 100%)',
+              fillOpacity: 0.6,
+              width: '100%',
+            }}
+            padding={-20}
+            data={data}
+          />
         </ChartCard>
       </Col>
     </Row>

@@ -9,6 +9,7 @@ import {Card, Col, FloatButton, Row} from "antd";
 import {SyncOutlined} from "@ant-design/icons";
 import DemoPie from "./components/Artificial";
 import Interaction from "./components/Interaction";
+import BackgroundScene from "./components/BackgroundScene";
 
 
 type AnalysisProps = {
@@ -43,6 +44,15 @@ const Analysis: FC<AnalysisProps> = () => {
             }}
           >
             <Summary key={refreshKey}/>
+            <Card
+              title="兜底场景"
+              style={{
+                marginTop: 24,
+              }}
+              bordered={false}
+            >
+              <BackgroundScene key={refreshKey}/>
+            </Card>
           </Col>
           <Col
             xl={8}
