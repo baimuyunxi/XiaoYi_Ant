@@ -1,9 +1,11 @@
 import {InfoCircleOutlined, NotificationOutlined} from '@ant-design/icons';
 import {Area, Column, Line} from '@ant-design/plots';
-import {Alert, Col, Progress, Row, Tooltip} from 'antd';
+import {Alert, Col, Row, Tooltip, Skeleton} from 'antd';
 import numeral from 'numeral';
 import {ChartCard, Field} from './Charts';
 import Marquee from "react-fast-marquee";
+import {queryIterate} from '../service';
+import React, {useEffect, useState} from "react";
 
 const topColResponsiveProps = {
   xs: 24,
@@ -16,38 +18,49 @@ const topColResponsiveProps = {
   },
 };
 
-const generateRandomData = () => {
-  const types = ['异常挂机'];
-  const startTime = new Date();
-  startTime.setHours(0, 0, 0, 0);
-  const endTime = new Date();
-  const interval = 10 * 60 * 1000; // 10 minutes in milliseconds
+const IntroduceRow: React.FC = () => {
+  const [aggregateData, setAggregateData] = useState({
+    firstTime: '',
+    secondTime: '',
+    totalQueue: 0,
+    detailTotalQueue: [],
+    totalArtificial: 0,
+    detailTotalArtificial: [],
+    mangoVolume: 0,
+    detailMangoVolume: [],
+    allVolume: 0,
+    detailAllVolume: [],
+    volumeProportion: 0,
+    transferRate: 0,
+    connectionRate: 0,
+  });
+  const [loading, setLoading] = useState(true);
 
-  const data: {
-    time: string; value: number; // Generates random value between 3 and 13
-    type: string;
-  }[] = [];
+  useEffect(() => {
+    async function fetchData() {
+      const response = await queryIterate({});
+      setAggregateData(response.data);
+      setLoading(false);
+    }
 
-  for (let time = startTime.getTime(); time <= endTime.getTime(); time += interval) {
-    const current = new Date(time);
-    const timeString = current.toTimeString().slice(0, 8); // Format time as HH:MM:SS
-    types.forEach(type => {
-      data.push({
-        time: timeString,
-        value: parseFloat((Math.random() * 10 + 3).toFixed(1)), // Generates random value between 3 and 13
-        type,
-      });
-    });
-  }
+    fetchData();
+  }, []);
 
-  return data;
-};
-
-const IntroduceRow = () => {
-
-  const data = generateRandomData().slice(-36); // 选择最后36条数据
-  const starttime = '12:00';
-  const rgendtime = '10:00';
+  const {
+    firstTime,
+    secondTime,
+    totalQueue,
+    detailTotalQueue,
+    totalArtificial,
+    detailTotalArtificial,
+    mangoVolume,
+    detailMangoVolume,
+    allVolume,
+    detailAllVolume,
+    volumeProportion,
+    transferRate,
+    connectionRate,
+  } = aggregateData;
 
   return (
     <Row gutter={24}>
@@ -62,14 +75,17 @@ const IntroduceRow = () => {
       >
         <Alert
           banner={true}
-          icon={<NotificationOutlined />}
+          icon={<NotificationOutlined/>}
           closable
           style={{borderRadius: '23px', backgroundColor: '#bff18f'}}
           message={
             <Marquee pauseOnHover gradient={false}>
-              当前整体数据截止时间&nbsp;<span
-              style={{color: 'red', fontWeight: 'bold'}}>{starttime}</span>&nbsp;，人工相关数据截止时间&nbsp;<span
-              style={{color: 'red', fontWeight: 'bold'}}>{rgendtime}</span>&nbsp;。
+              当前整体数据截止时间为&nbsp;<span
+              style={{color: 'red', fontWeight: 'bold'}}>{firstTime}</span>&nbsp;，人工相关数据统计截止时间为&nbsp;<span
+              style={{
+                color: 'red',
+                fontWeight: 'bold'
+              }}>{secondTime}</span>&nbsp;（话务数据存在2小时延迟）。每日凌晨四点前，百分比相关数值参考无意义。&nbsp;&nbsp;&nbsp;&nbsp;
             </Marquee>
           }
         />
@@ -83,24 +99,23 @@ const IntroduceRow = () => {
               <InfoCircleOutlined/>
             </Tooltip>
           }
-          total={() => 126560}
+          total={loading ? <Skeleton.Input style={{width: 100}} active/> : numeral(allVolume).format('0,0')}
           footer={<Field label="" value={''}/>}
           contentHeight={46}
         >
-          <Line
-            xField="time"
-            yField="value"
-            shapeField="smooth"
-            height={46}
-            axis={false}
-            // style={{
-            //   fill: 'linear-gradient(-90deg, white 0%, #975FE4 100%)',
-            //   fillOpacity: 0.6,
-            //   width: '100%',
-            // }}
-            padding={-20}
-            data={data}
-          />
+          {loading ? (
+            <Skeleton active/>
+          ) : (
+            <Line
+              xField="type"
+              yField="value"
+              shapeField="smooth"
+              height={46}
+              axis={false}
+              padding={-20}
+              data={detailAllVolume}
+            />
+          )}
         </ChartCard>
       </Col>
 
@@ -113,24 +128,29 @@ const IntroduceRow = () => {
               <InfoCircleOutlined/>
             </Tooltip>
           }
-          total={numeral(8846).format('0,0')}
-          footer={<Field label="呼入率" value={'78%'}/>}
+          total={loading ? <Skeleton.Input style={{width: 100}} active/> : numeral(mangoVolume).format('0,0')}
+          footer={<Field label="占比"
+                         value={loading ? <Skeleton.Input style={{width: 50}} active/> : `${volumeProportion}%`}/>}
           contentHeight={46}
         >
-          <Area
-            xField="time"
-            yField="value"
-            shapeField="smooth"
-            height={46}
-            axis={false}
-            style={{
-              fill: 'linear-gradient(-90deg, white 0%, #975FE4 100%)',
-              fillOpacity: 0.6,
-              width: '100%',
-            }}
-            padding={-20}
-            data={data}
-          />
+          {loading ? (
+            <Skeleton active/>
+          ) : (
+            <Area
+              xField="type"
+              yField="value"
+              shapeField="smooth"
+              height={46}
+              axis={false}
+              style={{
+                fill: 'linear-gradient(-90deg, white 0%, #975FE4 100%)',
+                fillOpacity: 0.6,
+                width: '100%',
+              }}
+              padding={-20}
+              data={detailMangoVolume}
+            />
+          )}
         </ChartCard>
       </Col>
       <Col {...topColResponsiveProps}>
@@ -142,19 +162,24 @@ const IntroduceRow = () => {
               <InfoCircleOutlined/>
             </Tooltip>
           }
-          total={numeral(6560).format('0,0')}
-          footer={<Field label="转人工率" value="60%"/>}
+          total={loading ? <Skeleton.Input style={{width: 100}} active/> : numeral(totalQueue).format('0,0')}
+          footer={<Field label="转人工率"
+                         value={loading ? <Skeleton.Input style={{width: 50}} active/> : `${transferRate}%`}/>}
           contentHeight={46}
         >
-          <Column
-            xField="time"
-            yField="value"
-            padding={-20}
-            axis={false}
-            height={46}
-            data={data}
-            scale={{x: {paddingInner: 0.4}}}
-          />
+          {loading ? (
+            <Skeleton active/>
+          ) : (
+            <Column
+              xField="type"
+              yField="value"
+              padding={-20}
+              axis={false}
+              height={46}
+              data={detailTotalQueue}
+              scale={{x: {paddingInner: 0.4}}}
+            />
+          )}
         </ChartCard>
       </Col>
       <Col {...topColResponsiveProps}>
@@ -166,27 +191,33 @@ const IntroduceRow = () => {
               <InfoCircleOutlined/>
             </Tooltip>
           }
-          total="1234"
-          footer={<Field label="接通率" value={'78%'}/>}
+          total={loading ? <Skeleton.Input style={{width: 100}} active/> : numeral(totalArtificial).format('0,0')}
+          footer={<Field label="接通率"
+                         value={loading ? <Skeleton.Input style={{width: 50}} active/> : `${connectionRate}%`}/>}
           contentHeight={46}
         >
-          <Area
-            xField="time"
-            yField="value"
-            shapeField="smooth"
-            height={46}
-            axis={false}
-            style={{
-              fill: 'linear-gradient(-90deg, #FBAB7E 0%, #F7CE68 100%)',
-              fillOpacity: 0.6,
-              width: '100%',
-            }}
-            padding={-20}
-            data={data}
-          />
+          {loading ? (
+            <Skeleton active/>
+          ) : (
+            <Area
+              xField="type"
+              yField="value"
+              shapeField="smooth"
+              height={46}
+              axis={false}
+              style={{
+                fill: 'linear-gradient(-90deg, #FBAB7E 0%, #F7CE68 100%)',
+                fillOpacity: 0.6,
+                width: '100%',
+              }}
+              padding={-20}
+              data={detailTotalArtificial}
+            />
+          )}
         </ChartCard>
       </Col>
     </Row>
   );
 };
+
 export default IntroduceRow;

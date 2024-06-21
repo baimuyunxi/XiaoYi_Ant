@@ -1,5 +1,5 @@
 import {GridContent} from '@ant-design/pro-components';
-import {useState, Suspense} from 'react';
+import {useState, Suspense, useEffect} from 'react';
 import IntroduceRow from './components/IntroduceRow';
 import PageLoading from './components/PageLoading';
 import Summary from './components/Summary';
