@@ -17,19 +17,15 @@ const PieChart = () => {
       data,
       angleField: 'value',
       colorField: 'type',
-      radius: 1,
-      startAngle: Math.PI,
-      endAngle: Math.PI * 1.5,
+      radius: 0.8,
       label: {
-        type: 'inner',
-        offset: '-8%',
-        content: ({value}) => `${value}`,  // 显示数量而不是标签名称
-        style: {fontSize: 12},
+        type: 'outer',
+        content: '{percentage}',
       },
+      interactions: [{ type: 'pie-legend-active' }, { type: 'element-active' }],
       legend: {
         position: 'left',
       },
-      interactions: [{type: 'element-active'}],
       pieStyle: {
         lineWidth: 0,
       },

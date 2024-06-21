@@ -1,24 +1,17 @@
 import {GridContent} from '@ant-design/pro-components';
-import {FC, useState} from 'react';
-import {Suspense} from 'react';
+import {useState, Suspense} from 'react';
 import IntroduceRow from './components/IntroduceRow';
 import PageLoading from './components/PageLoading';
 import Summary from './components/Summary';
-import type {AnalysisData} from './data.d';
 import {Card, Col, FloatButton, Row} from "antd";
 import {SyncOutlined} from "@ant-design/icons";
 import DemoPie from "./components/Artificial";
 import Interaction from "./components/Interaction";
 import BackgroundScene from "./components/BackgroundScene";
+import Mistake from "./components/Mistake";
 
 
-type AnalysisProps = {
-  dashboardAndanalysis: AnalysisData;
-  loading: boolean;
-};
-
-const Analysis: FC<AnalysisProps> = () => {
-
+const Analysis = () => {
 
   const [refreshKey, setRefreshKey] = useState(0);
 
@@ -81,6 +74,16 @@ const Analysis: FC<AnalysisProps> = () => {
               bordered={false}
             >
               <Interaction key={refreshKey}/>
+            </Card>
+            <Card
+              title="错误异常"
+              style={{
+                marginBottom: 24,
+                marginTop: 4
+              }}
+              bordered={false}
+            >
+              <Mistake key={refreshKey}/>
             </Card>
           </Col>
         </Row>
