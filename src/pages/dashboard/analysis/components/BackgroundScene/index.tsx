@@ -43,7 +43,7 @@ const BackgroundScene = () => {
         data,
         xField: 'type',
         yField: 'value',
-        colorField: 'type',
+        color: 'type',
         label: {
           position: 'middle', // 'top', 'bottom', 'middle',
           style: {

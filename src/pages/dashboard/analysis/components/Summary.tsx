@@ -65,19 +65,40 @@ const Summary: React.FC = () => {
     async function fetchData() {
       try {
         const response1 = await getArtificialExceptions({});
-        setArtificialData(response1.data);
+        const processedArtificialData1 = {
+          ...response1.data,
+          smallIconDetails: response1.data.smallIconDetails.map(item => ({
+            ...item,
+            value: parseInt(item.value, 10),
+          })),
+        };
+        setArtificialData(processedArtificialData1);
 
         const response2 = await getInteractionAnomalies({});
         setInteractionData(response2.data);
 
         const response3 = await getTheInterfaceIsAbnormal({});
-        setTheInterfaceData(response3.data);
+        const processedArtificialData3 = {
+          ...response3.data,
+          iconDetails: response3.data.iconDetails.map(item => ({
+            ...item,
+            value: parseInt(item.value, 10),
+          })),
+        };
+        setTheInterfaceData(processedArtificialData3);
 
         const response4 = await getErrorException({});
         setErrorData(response4.data);
 
         const response5 = await getAbnormalHangUp({});
-        setAbnormalData(response5.data);
+        const processedArtificialData5 = {
+          ...response5.data,
+          iconDetails: response5.data.iconDetails.map(item => ({
+            ...item,
+            value: parseInt(item.value, 10),
+          })),
+        };
+        setAbnormalData(processedArtificialData5);
 
         const response6 = await getBottomUpScenes({});
         setBottomUpData(response6.data);
@@ -120,18 +141,18 @@ const Summary: React.FC = () => {
                 data={artificialData.smallIconDetails}
               />
             )}
-            <Trend
-              flag={loading ? null : (parseFloat(artificialData.rateOfIncrease) > 0 ? "up" : "down")}
-              style={{
-                marginRight: 16,
-                marginTop: 12,
-              }}
-            >
-              2小时涨幅
-              {loading ?
-                <Skeleton.Input style={{width: 100}} active/> :
-                <span className={styles.trendText}>{artificialData.rateOfIncrease}%</span>}
-            </Trend>
+            {/*<Trend*/}
+            {/*  flag={loading ? null : (parseFloat(artificialData.rateOfIncrease) > 0 ? "up" : "down")}*/}
+            {/*  style={{*/}
+            {/*    marginRight: 16,*/}
+            {/*    marginTop: 12,*/}
+            {/*  }}*/}
+            {/*>*/}
+            {/*  2小时涨幅*/}
+            {/*  {loading ?*/}
+            {/*    <Skeleton.Input style={{width: 100}} active/> :*/}
+            {/*    <span className={styles.trendText}>{artificialData.rateOfIncrease}&nbsp;%</span>}*/}
+            {/*</Trend>*/}
           </div>
         </Card.Grid>
         <Card.Grid>
@@ -167,7 +188,7 @@ const Summary: React.FC = () => {
               2小时涨幅
               {loading ?
                 <Skeleton.Input style={{width: 100}} active/> :
-                <span className={styles.trendText}>{abnormalData.rateOfIncrease}%</span>}
+                <span className={styles.trendText}>{Math.abs(Number(abnormalData.rateOfIncrease))}%&nbsp;</span>}
             </Trend>
           </div>
         </Card.Grid>
@@ -204,7 +225,7 @@ const Summary: React.FC = () => {
               2小时涨幅
               {loading ?
                 <Skeleton.Input style={{width: 100}} active/> :
-                <span className={styles.trendText}>{theInterfaceData.rateOfIncrease}%</span>}
+                <span className={styles.trendText}>{Math.abs(Number(theInterfaceData.rateOfIncrease))}%&nbsp;</span>}
             </Trend>
           </div>
         </Card.Grid>
@@ -223,7 +244,7 @@ const Summary: React.FC = () => {
               2小时涨幅
               {loading ?
                 <Skeleton.Input style={{width: 100}} active/> :
-                <span className={styles.trendText}>{interactionData.rateOfIncrease}%</span>}
+                <span className={styles.trendText}>{Math.abs(Number(interactionData.rateOfIncrease))}%&nbsp;</span>}
             </Trend>
           </div>
         </Card.Grid>
@@ -242,7 +263,7 @@ const Summary: React.FC = () => {
               2小时涨幅
               {loading ?
                 <Skeleton.Input style={{width: 100}} active/> :
-                <span className={styles.trendText}>{errorData.rateOfIncrease}%</span>}
+                <span className={styles.trendText}>{Math.abs(Number(errorData.rateOfIncrease))}%&nbsp;</span>}
             </Trend>
           </div>
         </Card.Grid>
@@ -250,7 +271,8 @@ const Summary: React.FC = () => {
           <div>
             <h2>异常兜底</h2>
             <h3 style={{fontSize: '24px'}}>{loading ?
-              <Skeleton.Input style={{width: 100}} active/> : numeral(bottomUpData.totalAmount).format('0,0')}</h3>
+              <Skeleton.Input style={{width: 100}} active/> : numeral(bottomUpData.totalAmount).format('0,0')}
+              </h3>
           </div>
         </Card.Grid>
       </Card>

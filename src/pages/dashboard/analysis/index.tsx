@@ -3,8 +3,7 @@ import {useState, Suspense, useEffect} from 'react';
 import IntroduceRow from './components/IntroduceRow';
 import PageLoading from './components/PageLoading';
 import Summary from './components/Summary';
-import {Card, Col, FloatButton, Row} from "antd";
-import {SyncOutlined} from "@ant-design/icons";
+import {Card, Col, Row} from "antd";
 import DemoPie from "./components/Artificial";
 import Interaction from "./components/Interaction";
 import BackgroundScene from "./components/BackgroundScene";
@@ -13,17 +12,12 @@ import Mistake from "./components/Mistake";
 
 const Analysis = () => {
 
-  const [refreshKey, setRefreshKey] = useState(0);
-
-  const handleRefresh = () => {
-    setRefreshKey((prevKey) => prevKey + 1);
-  };
 
   return (
     <GridContent>
       <>
         <Suspense fallback={<PageLoading/>}>
-          <IntroduceRow key={refreshKey}/>
+          <IntroduceRow/>
         </Suspense>
         <Row gutter={24}>
           <Col
@@ -36,7 +30,9 @@ const Analysis = () => {
               marginBottom: 24,
             }}
           >
-            <Summary key={refreshKey}/>
+            <div>
+              <Summary/>
+            </div>
             <Card
               title="兜底场景"
               style={{
@@ -44,7 +40,7 @@ const Analysis = () => {
               }}
               bordered={false}
             >
-              <BackgroundScene key={refreshKey}/>
+              <BackgroundScene/>
             </Card>
           </Col>
           <Col
@@ -63,7 +59,7 @@ const Analysis = () => {
               }}
               bordered={false}
             >
-              <DemoPie key={refreshKey}/>
+              <DemoPie/>
             </Card>
             <Card
               title="交互异常"
@@ -73,7 +69,7 @@ const Analysis = () => {
               }}
               bordered={false}
             >
-              <Interaction key={refreshKey}/>
+              <Interaction/>
             </Card>
             <Card
               title="错误异常"
@@ -83,14 +79,10 @@ const Analysis = () => {
               }}
               bordered={false}
             >
-              <Mistake key={refreshKey}/>
+              <Mistake/>
             </Card>
           </Col>
         </Row>
-        {/*悬浮按钮*/}
-        <FloatButton.Group shape="circle" style={{right: 24}}>
-          <FloatButton icon={<SyncOutlined/>} onClick={handleRefresh}/>
-        </FloatButton.Group>
       </>
     </GridContent>
   );

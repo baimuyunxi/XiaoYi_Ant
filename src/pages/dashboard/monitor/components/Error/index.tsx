@@ -28,7 +28,7 @@ const generateRandomData = () => {
   return data;
 };
 
-const LineChart = () => {
+const LineChartS = () => {
   const containerRef = useRef(null);
   const {styles} = useStyles();
 
@@ -110,4 +110,4 @@ const LineChart = () => {
     </>);
 };
 
-export default LineChart;
+export default LineChartS;

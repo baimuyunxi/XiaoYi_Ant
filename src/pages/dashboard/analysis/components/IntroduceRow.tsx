@@ -39,7 +39,26 @@ const IntroduceRow: React.FC = () => {
   useEffect(() => {
     async function fetchData() {
       const response = await queryIterate({});
-      setAggregateData(response.data);
+      const processedArtificialData = {
+        ...response.data,
+        detailTotalQueue: response.data.detailTotalQueue.map(item => ({
+          ...item,
+          value: parseInt(item.value, 10),
+        })),
+        detailTotalArtificial: response.data.detailTotalArtificial.map(item => ({
+          ...item,
+          value: parseInt(item.value, 10),
+        })),
+        detailMangoVolume: response.data.detailMangoVolume.map(item => ({
+          ...item,
+          value: parseInt(item.value, 10),
+        })),
+        detailAllVolume: response.data.detailAllVolume.map(item => ({
+          ...item,
+          value: parseInt(item.value, 10),
+        })),
+      };
+      setAggregateData(processedArtificialData);
       setLoading(false);
     }
 
@@ -85,7 +104,7 @@ const IntroduceRow: React.FC = () => {
               style={{
                 color: 'red',
                 fontWeight: 'bold'
-              }}>{secondTime}</span>&nbsp;（话务数据存在2小时延迟）。每日凌晨四点前，百分比相关数值参考无意义。&nbsp;&nbsp;&nbsp;&nbsp;
+              }}>{secondTime}</span>&nbsp;（话务数据存在2小时延迟）。&nbsp;&nbsp;&nbsp;&nbsp;
             </Marquee>
           }
         />
@@ -112,7 +131,7 @@ const IntroduceRow: React.FC = () => {
               shapeField="smooth"
               height={46}
               axis={false}
-              padding={-20}
+              padding={[10, 20, 20, -20]}
               data={detailAllVolume}
             />
           )}
