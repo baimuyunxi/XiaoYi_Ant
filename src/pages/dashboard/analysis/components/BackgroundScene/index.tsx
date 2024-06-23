@@ -17,8 +17,11 @@ const BackgroundScene = () => {
   useEffect(() => {
     async function fetchData() {
       try {
-        const response1 = await getBottomUpScenes({});
-        setBottomUpData(response1.data);
+        const response = await getBottomUpScenes({});
+        if (response.code !== '200') {
+          new Error(response.message || 'Failed to fetch data');
+        }
+        setBottomUpData(response.data);
       } catch (error) {
         console.error('Error fetching data', error);
       } finally {

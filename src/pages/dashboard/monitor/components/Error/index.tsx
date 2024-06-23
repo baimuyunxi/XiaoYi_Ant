@@ -1,45 +1,55 @@
-import React, {useEffect, useRef} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {Line} from '@antv/g2plot';
-import {Col, Row, Statistic, Tooltip} from "antd";
+import {Col, message, Row, Statistic, Tooltip} from "antd";
 import useStyles from "@/pages/dashboard/monitor/style.style";
 import numeral from "numeral";
-
-const generateRandomData = () => {
-  const types = ['拒识', '超时', '按键错误', '超时&按键错误 >=4'];
-  const startTime = new Date();
-  startTime.setHours(0, 0, 0, 0);
-  const endTime = new Date();
-  const interval = 10 * 60 * 1000; // 10 minutes in milliseconds
-
-  const data = [];
-
-  for (let time = startTime.getTime(); time <= endTime.getTime(); time += interval) {
-    const current = new Date(time);
-    const timeString = current.toTimeString().slice(0, 8); // Format time as HH:MM:SS
-    types.forEach(type => {
-      data.push({
-        year: timeString,
-        value: parseFloat((Math.random() * 10 + 3).toFixed(1)), // Generates random value between 3 and 13
-        type,
-      });
-    });
-  }
-
-  return data;
-};
+import {getMistakeAbnormal, getPortAbnormal, getProcessAbnormal} from "@/pages/dashboard/monitor/service";
 
 const LineChartS = () => {
   const containerRef = useRef(null);
   const {styles} = useStyles();
+  const [loading, setLoading] = useState(true);
+  const [mistake, setMistake] = useState({
+    overNumber: "0",
+    keyNumber: "0",
+    rejectionNumber: "0",
+    MergerNumber: "0",
+    allIcon: [],
+  });
 
   useEffect(() => {
-    const data = generateRandomData();
-    const totalDataPoints = data.length / 4; // 每种类型的时间点数量
+    async function fetchData() {
+      try {
+        const response = await getMistakeAbnormal({});
+        if (response.code !== '200') {
+          throw new Error(response.message || 'Failed to fetch data');
+        }
+
+        const processedArtificialData = {
+          ...response.data,
+          allIcon: response.data.allIcon.map(item => ({
+            ...item,
+            value: parseInt(item.value, 10),
+          })),
+        };
+        setMistake(processedArtificialData);
+        setLoading(false);
+      } catch (error) {
+        message.error(`Error: ${error.message}`);
+        setLoading(false);
+      }
+    }
+
+    fetchData();
+  }, []);
+
+  useEffect(() => {
+    const totalDataPoints = mistake.allIcon.length / 4; // 每种类型的时间点数量
     const visibleDataPoints = 11;
     const start = (totalDataPoints - visibleDataPoints) / totalDataPoints;
     const linePlot = new Line(containerRef.current, {
-      data,
-      xField: 'year',
+      data: mistake.allIcon,
+      xField: 'line',
       yField: 'value',
       seriesField: 'type',
       smooth: true,
@@ -49,7 +59,7 @@ const LineChartS = () => {
           '拒识': '#FBE7C6',
           '超时': '#B4F8C8',
           '按键错误': '#A0E7E5',
-          '超时&按键错误 >=4': '#FFAEBC'
+          '超时与按键错误 >=4': '#FFAEBC'
         };
         return colors[type];
       },
@@ -82,7 +92,7 @@ const LineChartS = () => {
     return () => {
       linePlot.destroy();
     };
-  }, []);
+  }, [loading]);
 
   return (
     <>
@@ -91,17 +101,17 @@ const LineChartS = () => {
           <Statistic
             title="异常超时"
             suffix="次"
-            value={numeral(12233).format('0,0')}
+            value={numeral(mistake.overNumber).format('0,0')}
           />
         </Col>
         <Col md={6} sm={12} xs={24}>
-          <Statistic title="异常按键错误" value={numeral(1233).format('0,0')} suffix="次"/>
+          <Statistic title="异常按键错误" value={numeral(mistake.keyNumber).format('0,0')} suffix="次"/>
         </Col>
         <Col md={6} sm={12} xs={24}>
-          <Statistic title="异常拒识" value={numeral(2233).format('0,0')} suffix="次"/>
+          <Statistic title="异常拒识" value={numeral(mistake.rejectionNumber).format('0,0')} suffix="次"/>
         </Col>
         <Col md={6} sm={12} xs={24}>
-          <Statistic title="异常超时&拒识(>=7)" suffix="次" value={numeral(234).format('0,0')}/>
+          <Statistic title="异常超时&按键错误(>=7)" suffix="次" value={numeral(mistake.MergerNumber).format('0,0')}/>
         </Col>
       </Row>
       <div className={styles.mapChart}>

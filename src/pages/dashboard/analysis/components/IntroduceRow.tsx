@@ -39,6 +39,11 @@ const IntroduceRow: React.FC = () => {
   useEffect(() => {
     async function fetchData() {
       const response = await queryIterate({});
+
+      if (response.code !== '200') {
+        throw new Error(response.message || 'Failed to fetch data');
+      }
+
       const processedArtificialData = {
         ...response.data,
         detailTotalQueue: response.data.detailTotalQueue.map(item => ({

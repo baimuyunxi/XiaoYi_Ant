@@ -15,8 +15,11 @@ const DemoBar = () => {
   useEffect(() => {
     async function fetchData() {
       try {
-        const response1 = await getArtificialExceptions({});
-        setArtificialData(response1.data);
+        const response = await getArtificialExceptions({});
+        if (response.code !== '200') {
+          new Error(response.message || 'Failed to fetch data');
+        }
+        setArtificialData(response.data);
       } catch (error) {
         console.error('Error fetching data', error);
       } finally {

@@ -16,8 +16,11 @@ const PieChart = () => {
   useEffect(() => {
     async function fetchData() {
       try {
-        const response1 = await getErrorException({});
-        setErrorData(response1.data);
+        const response = await getErrorException({});
+        if (response.code !== '200') {
+          new Error(response.message || 'Failed to fetch data');
+        }
+        setErrorData(response.data);
       } catch (error) {
         console.error('Error fetching data', error);
       } finally {

@@ -65,6 +65,9 @@ const Summary: React.FC = () => {
     async function fetchData() {
       try {
         const response1 = await getArtificialExceptions({});
+        if (response1.code !== '200') {
+          new Error(response1.message || 'Failed to fetch data');
+        }
         const processedArtificialData1 = {
           ...response1.data,
           smallIconDetails: response1.data.smallIconDetails.map(item => ({
@@ -75,9 +78,15 @@ const Summary: React.FC = () => {
         setArtificialData(processedArtificialData1);
 
         const response2 = await getInteractionAnomalies({});
+        if (response2.code !== '200') {
+          new Error(response2.message || 'Failed to fetch data');
+        }
         setInteractionData(response2.data);
 
         const response3 = await getTheInterfaceIsAbnormal({});
+        if (response3.code !== '200') {
+          new Error(response3.message || 'Failed to fetch data');
+        }
         const processedArtificialData3 = {
           ...response3.data,
           iconDetails: response3.data.iconDetails.map(item => ({
@@ -88,9 +97,15 @@ const Summary: React.FC = () => {
         setTheInterfaceData(processedArtificialData3);
 
         const response4 = await getErrorException({});
+        if (response4.code !== '200') {
+          new Error(response4.message || 'Failed to fetch data');
+        }
         setErrorData(response4.data);
 
         const response5 = await getAbnormalHangUp({});
+        if (response5.code !== '200') {
+          new Error(response5.message || 'Failed to fetch data');
+        }
         const processedArtificialData5 = {
           ...response5.data,
           iconDetails: response5.data.iconDetails.map(item => ({
@@ -101,6 +116,9 @@ const Summary: React.FC = () => {
         setAbnormalData(processedArtificialData5);
 
         const response6 = await getBottomUpScenes({});
+        if (response6.code !== '200') {
+          new Error(response6.message || 'Failed to fetch data');
+        }
         setBottomUpData(response6.data);
       } catch (error) {
         console.error('Error fetching data', error);

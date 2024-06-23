@@ -1,9 +1,9 @@
 import {GridContent} from '@ant-design/pro-components';
 import {Card, Col, Row, Tooltip} from 'antd';
-import React, {FC, useState} from 'react';
+import React, {FC} from 'react';
 import ActiveChart from './components/ActiveChart';
 import Map from './components/Map';
-import {InfoCircleOutlined, SyncOutlined} from '@ant-design/icons';
+import {InfoCircleOutlined, CloudDownloadOutlined} from '@ant-design/icons';
 import ColumnChart from "./components/Error";
 import {FloatButton} from 'antd';
 
@@ -15,7 +15,13 @@ const InterfaceComment = () => (
   </div>
 );
 
-const ProcessException = () => ('');
+const ProcessException = () => (
+  <div>
+    <p>口径：<br/>
+      &nbsp;&nbsp;&nbsp;&nbsp;1.非用户挂机和命中结束语正常挂机<br/>
+      &nbsp;&nbsp;&nbsp;&nbsp;2.有来话，无交互记录</p>
+  </div>
+);
 
 const ButtonException = () => (
   <div>
@@ -27,11 +33,6 @@ const ButtonException = () => (
 );
 
 const Monitor: FC = () => {
-  const [refreshKey, setRefreshKey] = useState(0);
-
-  const handleRefresh = () => {
-    setRefreshKey((prevKey) => prevKey + 1);
-  };
 
   return (
     <GridContent>
@@ -53,7 +54,7 @@ const Monitor: FC = () => {
                       <InfoCircleOutlined/>
                     </Tooltip>}
             >
-              <Map key={refreshKey}/>
+              <Map/>
             </Card>
           </Col>
           <Col
@@ -73,7 +74,7 @@ const Monitor: FC = () => {
                   <InfoCircleOutlined/>
                 </Tooltip>}
             >
-              <ActiveChart key={refreshKey}/>
+              <ActiveChart/>
             </Card>
           </Col>
           <Col
@@ -90,12 +91,12 @@ const Monitor: FC = () => {
               <Tooltip title={ButtonException}>
                 <InfoCircleOutlined/>
               </Tooltip>}>
-              <ColumnChart key={refreshKey}/>
+              <ColumnChart/>
             </Card>
           </Col>
         </Row>
         <FloatButton.Group shape="circle" style={{right: 24}}>
-          <FloatButton icon={<SyncOutlined/>} onClick={handleRefresh}/>
+          <FloatButton icon={<CloudDownloadOutlined/>} onClick={''}/>
           <FloatButton.BackTop visibilityHeight={0}/>
         </FloatButton.Group>
       </>

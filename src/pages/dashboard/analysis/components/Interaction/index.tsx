@@ -14,8 +14,11 @@ const PieChart = () => {
   useEffect(() => {
     async function fetchData() {
       try {
-        const response1 = await getInteractionAnomalies({});
-        setInteractionData(response1.data);
+        const response = await getInteractionAnomalies({});
+        if (response.code !== '200') {
+          new Error(response.message || 'Failed to fetch data');
+        }
+        setInteractionData(response.data);
       } catch (error) {
         console.error('Error fetching data', error);
       } finally {
