@@ -45,7 +45,7 @@ const LineChartS = () => {
 
   useEffect(() => {
     const totalDataPoints = mistake.allIcon.length / 4; // 每种类型的时间点数量
-    const visibleDataPoints = 11;
+    const visibleDataPoints = 12;
     const start = (totalDataPoints - visibleDataPoints) / totalDataPoints;
     const linePlot = new Line(containerRef.current, {
       data: mistake.allIcon,

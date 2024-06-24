@@ -79,10 +79,6 @@ const Monitor: FC = () => {
           </Col>
           <Col
             xl={24}
-            lg={24}
-            md={24}
-            sm={24}
-            xs={24}
             style={{
               marginBottom: 24,
             }}
@@ -96,7 +92,7 @@ const Monitor: FC = () => {
           </Col>
         </Row>
         <FloatButton.Group shape="circle" style={{right: 24}}>
-          <FloatButton icon={<CloudDownloadOutlined/>} onClick={''}/>
+          <FloatButton icon={<CloudDownloadOutlined/>}/>
           <FloatButton.BackTop visibilityHeight={0}/>
         </FloatButton.Group>
       </>

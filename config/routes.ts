@@ -69,50 +69,66 @@ export default [
   {
     path: '/ivr-Index',
     icon: 'ContainerOutlined',
-    name:'analysis',
+    name: 'analysis',
     routes: [
       {
         path: '/ivr-Index',
         redirect: '/ivr-Index/notifications'
       },
       {
-        name:'notifications' ,
+        name: 'notifications',
         icon: 'FileWordOutlined',
-        path:'/ivr-Index/notifications',
+        path: '/ivr-Index/notifications',
         component: './ivr-Index/notifications',
       },
       {
-        name:'xiaoYiIterate',
-        icon:'MergeOutlined',
+        name: 'xiaoYiIterate',
+        icon: 'MergeOutlined',
         path: '/ivr-Index/xiaoYiIterate',
         component: './ivr-Index/xiaoYiIterate',
       },
     ]
   },
   {
+    path: '/income',
+    icon: 'WhatsAppOutlined',
+    name: 'income',
+    routes: [
+      {
+        path: '/income',
+        redirect: '/income/marker'
+      },
+      {
+        name: 'marker',
+        icon: 'SignatureOutlined',
+        path: '/income/marker',
+        component: './income/marker',
+      }
+    ],
+  },
+  {
     path: '/differentiation',
     icon: 'SlidersOutlined',
-    name:'differentiation',
+    name: 'differentiation',
     routes: [
       {
         path: '/differentiation',
         redirect: '/differentiation/report-form'
       },
       {
-        name:'report-form' ,
+        name: 'report-form',
         icon: 'AreaChartOutlined',
-        path:'/differentiation/report-form',
+        path: '/differentiation/report-form',
         component: './differentiation/report-form',
       },
       {
-        name:'configuration',
-        icon:'ToolOutlined',
+        name: 'configuration',
+        icon: 'ToolOutlined',
         path: '/differentiation/configuration',
         component: './differentiation/configuration',
         access: 'canAdmin'
       },
     ]
-
   },
   // {
   //   path: '/list',

@@ -24,7 +24,6 @@ import {PageContainer} from "@ant-design/pro-components";
 import moment from "moment";
 import useStyles from './style.style'
 import {
-  queryCallVolume,
   queryCallSense,
   querySatisfaction,
   queryCallSenseDetail,
@@ -811,7 +810,7 @@ const notifications: React.FC = () => {
 
       // 根据当前展示的模块和 Tab 调用相应的 API
       if (currentCard === 'callVolume') {
-        WaitingAll();
+        // WaitingAll();
         switch (hrselectedTabKey) {
           case 'rgSense':
             const senseResponse = await queryCallSense(params);
@@ -827,7 +826,7 @@ const notifications: React.FC = () => {
             break;
         }
       } else if (currentCard === 'satisfaction') {
-        WaitingAll();
+        // WaitingAll();
         switch (selectedTabKey) {
           case 'mydOverall':
             const overallResponse = await querySatOverall(params);
@@ -881,7 +880,7 @@ const notifications: React.FC = () => {
       last_day_ids: comparisonDates?.[0]?.format("YYYY-MM-DD HH:mm:ss"),
       last_day_ide: comparisonDates?.[1]?.format("YYYY-MM-DD HH:mm:ss"),
     };
-    WaitingAll();
+    // WaitingAll();
 
     try {
       let response;

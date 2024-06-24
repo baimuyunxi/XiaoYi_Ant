@@ -1,5 +1,5 @@
 import React, {useEffect, useRef, useState} from 'react';
-import {Area, DualAxes} from '@antv/g2plot';
+import {Area, Column, DualAxes} from '@antv/g2plot';
 import {Radio, Col, Row, Statistic, Table, Divider, message} from "antd";
 import numeral from "numeral";
 import useStyles from "@/pages/dashboard/monitor/style.style";
@@ -66,12 +66,13 @@ const DemoArea = () => {
 
         let newChart;
         if (figure === 'port') {
-          const totalLength = portData.interfaceIcon.length;
-          const visibleDataPoints = 11;
+          const totalLength = portData.interfaceIcon.length / 2;
+          const visibleDataPoints = 12;
           const start = (totalLength - visibleDataPoints) / totalLength;
           newChart = new Area(containerRef.current, {
             data: portData.interfaceIcon,
             isStack: true,
+            smooth: true,
             xField: 'line',
             yField: 'value',
             seriesField: 'type',
@@ -88,35 +89,36 @@ const DemoArea = () => {
             },
           });
         } else if (figure === 'node') {
+          // 计算totalValue并排序
           const sortedNodeIcon = portData.nodeIcon
             .map(item => ({
               ...item,
-              totalValue: item.valueN + item.valueC
+              totalValue: item.value
             }))
             .sort((a, b) => a.totalValue - b.totalValue);
 
-          const totalLength = sortedNodeIcon.length;
-          const visibleDataPoints = 11;
+          const totalLength = portData.nodeIcon.length / 2;
+          const visibleDataPoints = 4;
           const start = (totalLength - visibleDataPoints) / totalLength;
-          newChart = new DualAxes(containerRefBar.current, {
-            data: [sortedNodeIcon, sortedNodeIcon],
-            autoHide: true,
+          newChart = new Column(containerRefBar.current, {
+            data: portData.nodeIcon,
+            isStack: true,
             xField: 'line',
-            yField: ['valueC', 'valueN'],
-            legend: {
-              position: 'top',
+            yField: 'value',
+            seriesField: 'type',
+            label: {
+              // 可手动配置 label 数据标签位置
+              position: 'middle', // 'top', 'bottom', 'middle'
+              // 可配置附加的布局方法
+              layout: [
+                // 柱形图数据标签位置自动调整
+                {type: 'interval-adjust-position'},
+                // 数据标签防遮挡
+                {type: 'interval-hide-overlap'},
+                // 数据标签文颜色自动调整
+                {type: 'adjust-color'},
+              ],
             },
-            geometryOptions: [
-              {
-                geometry: 'column',
-              },
-              {
-                geometry: 'line',
-                lineStyle: {
-                  lineWidth: 2,
-                },
-              },
-            ],
             slider: {
               start,
               end: 1,
@@ -154,11 +156,11 @@ const DemoArea = () => {
     dataIndex: 'sumCount',
     sorter: (a, b) => a.sumCount - b.sumCount,
   }, {
-    title: position === 'start' ? '失败量' : '失败量占比',
+    title: position === 'start' ? '失败量' : '失败占比',
     dataIndex: position === 'start' ? 'error_count' : 'errorPercentage',
     sorter: position === 'start' ? (a, b) => a.error_count - b.error_count : (a, b) => a.errorPercentage - b.errorPercentage,
   }, {
-    title: position === 'start' ? '为N量' : '为N量占比',
+    title: position === 'start' ? '为N量' : '为N占比',
     dataIndex: position === 'start' ? 'null_count' : 'nullPercentage',
     sorter: position === 'start' ? (a, b) => a.null_count - b.null_count : (a, b) => a.nullPercentage - b.nullPercentage,
   }, {
@@ -225,7 +227,7 @@ const DemoArea = () => {
         >
           <div className={styles.mapChart}>
             <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px'}}>
-              <h3>异常接口</h3>
+              <h3>接口调用情况</h3>
               <Radio.Group value={position} onChange={(e) => setPosition(e.target.value)}>
                 <Radio.Button value="start">数值</Radio.Button>
                 <Radio.Button value="end">占比</Radio.Button>

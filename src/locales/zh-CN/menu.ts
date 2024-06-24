@@ -56,4 +56,6 @@ export default {
   'menu.differentiation':'差异化',
   'menu.differentiation.report-form':'报表',
   'menu.differentiation.configuration':'配置',
+  'menu.income':'话务',
+  'menu.income.marker':'标签',
 };

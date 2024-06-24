@@ -1,14 +1,13 @@
 import React, {useEffect, useRef, useState} from 'react';
 import {Area} from '@antv/g2plot';
-import {Col, Divider, message, Row, Statistic, Table} from "antd";
+import {Col, message, Row, Statistic} from "antd";
 import numeral from "numeral";
 import useStyles from "@/pages/dashboard/monitor/style.style";
-import {getPortAbnormal, getProcessAbnormal} from "@/pages/dashboard/monitor/service";
+import {getProcessAbnormal} from "@/pages/dashboard/monitor/service";
 
 const ActiveChart = () => {
   const {styles} = useStyles();
   const containerRef = useRef(null);
-  const [chart, setChart] = useState(null);
   const [loading, setLoading] = useState(true);
   const [process, setProcess] = useState({
     allNumber: "0",
@@ -46,40 +45,36 @@ const ActiveChart = () => {
 
 
   useEffect(() => {
-    const totalDataPoints = process.ProcessIcon.length; // 每种类型的时间点数量
-    const visibleDataPoints = 11;
+    const totalDataPoints = process.ProcessIcon.length / 2; // 每种类型的时间点数量
+    const visibleDataPoints = 12;
     const start = (totalDataPoints - visibleDataPoints) / totalDataPoints;
 
     const areaPlot = new Area(containerRef.current, {
       data: process.ProcessIcon,
-      // isStack: true,
+      isStack: true,
       smooth: true,
       xField: 'line',
       yField: 'value',
       seriesField: 'type',
-      interactions: [{type: 'active-region', enable: false}],
+      // interactions: [{type: 'active-region', enable: false}],
       slider: {
         start,
         end: 1,
       },
-      // color: ({type}) => {
-      //   // Define colors for each type
-      //   const colors = {
-      //     '失败': '#FFCCCC',
-      //     '为N': '#80a4c9',
-      //   };
-      //   return colors[type];
-      // },
+      color: ({type}) => {
+        // Define colors for each type
+        const colors = {
+          '异常挂机': '#FFCCCC',
+          '无交互': '#80a4c9',
+        };
+        return colors[type];
+      },
     });
 
     areaPlot.render();
-    setChart(areaPlot);
 
-    // Cleanup function
     return () => {
-      if (chart) {
-        chart.destroy();
-      }
+      areaPlot.destroy();
     };
   }, [loading]);
 
