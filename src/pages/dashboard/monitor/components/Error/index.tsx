@@ -59,7 +59,7 @@ const LineChartS = () => {
           '拒识': '#FBE7C6',
           '超时': '#B4F8C8',
           '按键错误': '#A0E7E5',
-          '超时与按键错误 >=4': '#FFAEBC'
+          '超时与按键错误>=7': '#FFAEBC'
         };
         return colors[type];
       },

@@ -40,11 +40,12 @@
   "dependencies": {
     "@ant-design/icons": "^4.8.3",
     "@ant-design/plots": "^2.1.5",
-    "@ant-design/pro-components": "^2.6.44",
+    "@ant-design/pro-components": "^2.7.10",
     "@antv/g2plot": "^2.4.31",
     "@antv/l7": "^2.20.13",
     "@antv/l7-maps": "^2.20.13",
     "@antv/l7-react": "^2.4.3",
+    "@iconify/react": "^5.0.1",
     "@tsparticles/engine": "^3.4.0",
     "@tsparticles/preset-fountain": "^3.0.2",
     "@tsparticles/react": "^3.0.0",

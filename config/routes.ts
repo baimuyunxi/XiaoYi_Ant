@@ -96,14 +96,20 @@ export default [
     routes: [
       {
         path: '/income',
-        redirect: '/income/marker'
+        redirect: '/income/figure'
+      },
+      {
+        name: 'figure',
+        icon: 'PieChartOutlined',
+        path: '/income/figure',
+        component: './income/figure',
       },
       {
         name: 'marker',
         icon: 'SignatureOutlined',
         path: '/income/marker',
         component: './income/marker',
-      }
+      },
     ],
   },
   {

@@ -58,4 +58,5 @@ export default {
   'menu.differentiation.configuration':'配置',
   'menu.income':'话务',
   'menu.income.marker':'标签',
+  'menu.income.figure':'图表',
 };
